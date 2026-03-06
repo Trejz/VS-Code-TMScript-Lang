@@ -1,20 +1,716 @@
 {
   "types": {
-    "TBase": {
-      "description": "Base data type with Value and Type attributes",
-      "constructor": "TBase <basename> = string, {float, float, float, float, float}",
+    "SerialPort": {
+      "description": "Use SerialPort class and declare variables to create a COM port device. The variable name will be the device name.",
+      "constructor": "SerialPort <variableName> = string, int, string, int, float, int, bool, bool, bool",
       "attributes": {
-        "Value": "string",
-        "Type": "int"
+      },
+      "methods": {
+      }
+    },
+    "Socket": {
+      "description": "Use Socket class and declare variables to create a TCP/IP communication device. The variable name will be the device name.",
+      "constructor": "Socket <variableName> = string, int, int",
+      "attributes": {
+      },
+      "methods": {
+      }
+    },
+    "MDesicion": {
+      "description": "Use the MDecision class with variable declaration to allow users to configure M-Decision nodes for conditional judgments or to display pop-up messages.",
+      "constructor": "Socket <variableName> = string, string",
+      "attributes": {
+      },
+      "methods": {
+        "Reset": {
+          "documentation": "Reset all MDecision parameters to the default.",
+          "parameters": [
+            "void"
+          ],
+          "return": "void"
+        },
+        "Title": {
+          "documentation": "The pop-up headline",
+          "parameters": [
+            "string - Title"
+          ],
+          "return": "void"
+        },
+        "Description": {
+          "documentation": "The pop-up text",
+          "parameters": [
+            "string - Text"
+          ],
+          "return": "void"
+        },
+        "Timeout": {
+          "documentation": "Timeout",
+          "parameters": [
+            "int - Timout (ms)" , "int - Default index after Timeout"
+          ],
+          "return": "void"
+        },
+        "TimeoutDefaultCase": {
+          "documentation": "The default index after the timeout",
+          "parameters": [
+            "int - Default index after Timeout"
+          ],
+          "return": "void"
+        },
+        "Case": {
+          "documentation": "Add, delete, or modify the conditional judgement",
+          "parameters": [
+            "int - Condition or the index of the button", "string - Text to display", "string - Text color", "string - Background color", "bool - Conditional can be true/false"
+          ],
+          "return": "void"
+        },
+        "Show": {
+          "documentation": "Check the conditional judgement",
+          "parameters": [
+            "void - No Parameters"
+          ],
+          "return": "int"
+        }
+      }
+    },
+    "TPoint": {
+      "description": "Use TPoint Class and declare variables to create the point names and the point values. The variable name will be the point name.",
+      "constructor": [
+        "TPoint <variableName> = float[]",
+        "TPoint <variableName> = float, float, float, float, float, float",
+        "TPoint <variableName> = string, float[]",
+        "TPoint <variableName> = string, float[], string, string",
+        "TPoint <variableName> = float[], string, string",
+        "TPoint <variableName> = string, float[], float[], string, string"
+      ],
+      "attributes": {
+        "Value":"float[]",
+        "Joint":"float[]",
+        "Pose":"int[]",
+        "Flange":"float[]",
+        "BaseName":"string",
+        "TCPName":"string",
+        "TeachValue":"float[]",
+        "TeachJoint":"float[]",
+        "TeachPose":"int[]"
+      },
+      "methods": {
+      }
+    },
+    "TBase": {
+      "description": "Use TBase Class and declare variables to create the point names and the point values. The variable name will be the point name.",
+      "constructor": [
+        "TBase <variableName> = float[]",
+        "TBase <variableName> = float, float, float, float, float, float",
+        "TBase <variableName> = string, float[]"
+      ],
+      "attributes": {
+        "Value":"float[]",
+        "Type":"string",
+        "TeachValue":"int[]"
       },
       "methods": {
         "GetValue": {
-          "documentation": "Gets the value at the specified index",
+          "documentation": "Retrieve the base value",
           "parameters": [
-            "int - Index"
+            "int - Base Index"
           ],
+          "return": "float[]"
+        },
+        "SetValue": {
+          "documentation": "Set the base value.",
+          "parameters": [
+            "int - Base Index",
+            "float - Base Value: X(mm), Y(mm), Z(mm), RX(°), RY(°), RZ(°)"
+          ],
+          "return": "bool"
+        },
+        "ConShift": {
+          "documentation": "Convert a new base value with the base value (the original base teach value) and the shift value, where the shift depends on the position and direction of the original coordinate.",
+          "parameters": [
+            "float[] - Shift Value: X(mm), Y(mm), Z(mm), RX(°), RY(°), RZ(°)"
+          ],
+          "return": "float[]"
+        }
+      }
+    },
+    "TTCP": {
+      "description": "Use TTCP Class and declare variables to create the point names and the point values. The variable name will be the point name.",
+      "constructor": [
+        "TTCP <variableName> = float[]",
+        "TTCP <variableName> = float[], float",
+        "TTCP <variableName> = string, float[], float"
+      ],
+      "attributes": {
+        "Value":"float[]",
+        "Mass":"float",
+        "MOI":"float[]",
+        "MCF":"float[]",
+        "TeachValue":"float[]",
+        "TeachMass":"float",
+        "TeachMOI":"float[]",
+        "TeachMCF":"float[]"
+      },
+      "methods": {
+      }
+    },
+    "ModbusTCP": {
+      "description": "Modbus TCP device class. Variable name becomes device name.",
+      "constructor": [
+        "ModbusTCP <variableName> = string",
+        "ModbusTCP <variableName> = string, int",
+        "ModbusTCP <variableName> = string, int, int"
+      ],
+      "attributes": {
+      },
+      "methods": {
+        "Preset": {
+          "documentation": "Configure preset ModbusTCP parameters.",
+          "parameters": [
+            "string - Preset name", "byte - Slave ID", "string - Signal type (DO/DI/RO/RI)", "int - Starting address", "string - Type (bool/byte/int16/int32/float/double/string)", "int - Suffix (endian or string length)"
+          ],
+          "return": "bool"
+        },
+        "IODDPreset": {
+          "documentation": "Read IODD file and configure preset parameters.",
+          "parameters": [
+            "string - IODD file name", "byte - Slave ID", "int - Starting address In", "int - Starting address Out"
+          ],
+          "return": "bool"
+        }
+      }
+    },
+    "ModbusRTU": {
+      "description": "Modbus RTU device class. Variable name becomes device name.",
+      "constructor": [
+        "ModbusRTU <variableName> = string, int",
+        "ModbusRTU <variableName> = string, int, string, int, float",
+        "ModbusRTU <variableName> = string, int, string, int, float, int",
+        "ModbusRTU <variableName> = string, int, string, int, float, int, bool, bool, bool"
+      ],
+      "attributes": {
+      },
+      "methods": {
+        "Preset": {
+          "documentation": "Configure preset ModbusRTU parameters.",
+          "parameters": [
+            "string - Preset name", "byte - Slave ID", "string - Signal type (DO/DI/RO/RI)", "int - Starting address", "string - Type (bool/byte/int16/int32/float/double/string)", "int - Suffix (endian or string length)"
+          ],
+          "return": "bool"
+        },
+        "IODDPreset": {
+          "documentation": "Read IODD file and configure preset parameters.",
+          "parameters": [
+            "string - IODD file name", "byte - Slave ID", "int - Starting address In", "int - Starting address Out"
+          ],
+          "return": "bool"
+        }
+      }
+    },
+    "Compliance": {
+      "description": "Compliance class for robot compliance control settings and stop conditions. Provides single axis, teach, multiple axes, and impedance compliance control modes.",
+      "constructor": [
+        "Compliance <variableName>"
+      ],
+      "attributes": {
+      },
+      "methods": {
+        "Reset": {
+          "documentation": "Reset all the compliance control motion parameters to the default.",
+          "parameters": [],
+          "return": "void"
+        },
+        "Frame": {
+          "documentation": "Set the reference base of the compliance control motion. 1=Tool, 2=Current base.",
+          "parameters": [
+            "int - Base (1=Tool, 2=Current base)"
+          ],
+          "return": "void"
+        },
+        "HighResistance": {
+          "documentation": "Set the resistance on the non-motion direction (X,Y,Z). false=Default, true=High resistance.",
+          "parameters": [
+            "bool - High resistance enabled"
+          ],
+          "return": "void"
+        },
+        "Single": {
+          "documentation": "Set the single axis parameters of compliance control motion.",
+          "parameters": [
+            "int/string - Direction (0=X, 1=Y, 2=Z, 3=RX, 4=RY, 5=RZ)", "int - Distance (mm for XYZ, degree for RXRYRZ)"
+          ],
+          "return": "void"
+        },
+        "Teach": {
+          "documentation": "Set the teach parameters of compliance control motion.",
+          "parameters": [
+            "int/string - Direction (0=Linear, 1=Rotation)", "float[]/string - 1st point", "float[]/string - 2nd point", "int - Adjustment range"
+          ],
+          "return": "void"
+        },
+        "Multiple": {
+          "documentation": "Set the multiple axes parameters of compliance control motion.",
+          "parameters": [
+            "int/string - Direction", "bool - Enable", "int - Upper bound", "int - Lower bound"
+          ],
+          "return": "void"
+        },
+        "Impedance": {
+          "documentation": "Set the impedance parameters of compliance control motion.",
+          "parameters": [
+            "int/string - Axes to release (0=All, 1=XYZ, 2=RXRYRZ)", "int - Rigidity level (0=Soft, 1=Intermediate, 2=Stiff)"
+          ],
+          "return": "void"
+        },
+        "Timeout": {
+          "documentation": "Set the stop condition of timeout. <0=Disable, >=0=Timeout duration in ms. Call with no params to cancel.",
+          "parameters": [
+            "int - Timeout in milliseconds"
+          ],
+          "return": "void"
+        },
+        "DInput": {
+          "documentation": "Set the stop condition of the digital input. Call with no params to cancel.",
+          "parameters": [
+            "string - Module name (ControlBox/EndModule/ExtModuleN)", "int - Input channel", "int/string - Condition (0=L, 1=H)"
+          ],
+          "return": "void"
+        },
+        "AInput": {
+          "documentation": "Set the stop condition of the analog input. Call with no params to cancel.",
+          "parameters": [
+            "string - Module name", "int - Input channel", "int/string - Condition (0=>, 1=>=, 2===, 3=<=, 4=<)", "float - Condition value"
+          ],
+          "return": "void"
+        },
+        "Condition": {
+          "documentation": "Set the stop condition of the conditional expression. Call with no params to cancel.",
+          "parameters": [
+            "bool/? - Conditional expression"
+          ],
+          "return": "void"
+        },
+        "Start": {
+          "documentation": "Start the compliance control motion. Returns result: 0=Not Working, 1=Working, 2=Timeout, 3=Distance reached, 4=IO triggered, 5=Resisted, 6=Error, 14=Over Speed, 201-206=Various stop conditions.",
+          "parameters": [],
+          "return": "int"
+        },
+        "Stop": {
+          "documentation": "Stop the compliance control motion. Returns result value after compliance control motion stops.",
+          "parameters": [],
+          "return": "int"
+        }
+      }
+    },
+    "TouchStop": {
+      "description": "TouchStop class for robot touch stop control settings and stop conditions. Supports Compliance, Line, and Force operation modes.",
+      "constructor": [
+        "TouchStop <variableName> = string",
+        "TouchStop <variableName> = string, string"
+      ],
+      "attributes": {
+      },
+      "methods": {
+        "Reset": {
+          "documentation": "Reset all the touchstop control motion parameters to the default except the operation mode and sensor device.",
+          "parameters": [],
+          "return": "void"
+        },
+        "Frame": {
+          "documentation": "Set the reference base of the touchstop control motion. 1=Tool, 2=Current base.",
+          "parameters": [
+            "int - Base (1=Tool, 2=Current base)"
+          ],
+          "return": "void"
+        },
+        "HighResistance": {
+          "documentation": "Set the resistance on the non-motion direction (X,Y,Z). Valid when operation mode is Compliance.",
+          "parameters": [
+            "bool - High resistance enabled (false=Default, true=High)"
+          ],
+          "return": "void"
+        },
+        "BrakeDistance": {
+          "documentation": "Set the braking distance in mm. Valid when operation mode is Line.",
+          "parameters": [
+            "int - Braking distance in mm"
+          ],
+          "return": "void"
+        },
+        "RecordPosPoint": {
+          "documentation": "Set the record touchstop coordinate value to the point name. Call with no params to cancel.",
+          "parameters": [
+            "string - Point name", "bool - Record trigger point (false=stop point, true=trigger point)"
+          ],
+          "return": "void"
+        },
+        "Single": {
+          "documentation": "Set the single axis parameters of touchstop control motion.",
+          "parameters": [
+            "int/string - Direction (0-5 or X/Y/Z/RX/RY/RZ)", "int - Distance", "int - Force(N)/Speed(mm/s)", "int - Target speed/Accel time"
+          ],
+          "return": "void"
+        },
+        "Teach": {
+          "documentation": "Set the teach parameters of touchstop control motion.",
+          "parameters": [
+            "int/string - Direction (0=Linear, 1=Rotation)", "float[]/string - 1st point", "float[]/string - 2nd point", "int - Adjustment range", "int - Force/Speed", "int - Target speed/Accel time"
+          ],
+          "return": "void"
+        },
+        "AdvSet": {
+          "documentation": "Set the advanced parameters of touchstop control motion. Valid when operation mode is Compliance.",
+          "parameters": [
+            "int/string - Direction", "bool - Enable", "int - Upper bound", "int - Lower bound", "int - Force", "int - Target speed"
+          ],
+          "return": "void"
+        },
+        "Timeout": {
+          "documentation": "Set the stop condition of timeout. <0=Disable, >=0=Timeout duration in ms. Call with no params to cancel.",
+          "parameters": [
+            "int - Timeout in milliseconds"
+          ],
+          "return": "void"
+        },
+        "DInput": {
+          "documentation": "Set the stop condition of the digital input. Can also set stroke ratio for Compliance mode. Call with no params to cancel.",
+          "parameters": [
+            "string - Module name (ControlBox/EndModule/ExtModuleN)", "int - Input channel", "int/string - Condition (0=L, 1=H)"
+          ],
+          "return": "void"
+        },
+        "AInput": {
+          "documentation": "Set the stop condition of the analog input. Call with no params to cancel.",
+          "parameters": [
+            "string - Module name", "int - Input channel", "int/string - Condition (0=>, 1=>=, 2===, 3=<=, 4=<)", "float - Condition value"
+          ],
+          "return": "void"
+        },
+        "Condition": {
+          "documentation": "Set the stop condition of the conditional expression. Call with no params to cancel.",
+          "parameters": [
+            "bool/? - Conditional expression"
+          ],
+          "return": "void"
+        },
+        "Resisted": {
+          "documentation": "Set the stop condition of external resistance detection. Valid when operation mode is Compliance. Call with no params to cancel.",
+          "parameters": [
+            "bool - Enable external resistance detection"
+          ],
+          "return": "void"
+        },
+        "FTReached": {
+          "documentation": "Set the stop condition of monitoring force/torque values. Valid when operation mode is Force. Call with no params to cancel.",
+          "parameters": [
+            "int/string - Force type (6=F3D, 7=T3D, 8=Force)", "bool - Enable", "float - Monitoring value"
+          ],
+          "return": "void"
+        },
+        "Start": {
+          "documentation": "Start the touchstop control motion. Returns result: 0=Not Working, 1=Working, 2=Timeout, 3=Distance reached, 4=IO triggered, 5=Resisted, 6=Error, 14=Over Speed, 201-206=Various stop conditions.",
+          "parameters": [
+            "bool - Zero out force sensor before execution (for Force mode)"
+          ],
+          "return": "int"
+        },
+        "Stop": {
+          "documentation": "Stop the touchstop control motion. Returns result value after touchstop control motion stops.",
+          "parameters": [],
+          "return": "int"
+        },
+        "GetStoppedPos": {
+          "documentation": "Get the stopped position values after the robot touch-stopped. Returns float[] of coordinates or joint angles.",
+          "parameters": [
+            "int - Coordinate type (0=flange by current base, 1=joint angle, 2=TCP by current base, 3=TCP by RobotBase, 4=end TCP by RobotBase)"
+          ],
+          "return": "float[]"
+        },
+        "GetTriggeredPos": {
+          "documentation": "Get the triggered position values after the robot touch-stopped. Returns float[] of coordinates or joint angles.",
+          "parameters": [
+            "int - Coordinate type (0=flange by current base, 1=joint angle, 2=TCP by current base, 3=TCP by RobotBase, 4=end TCP by RobotBase)"
+          ],
+          "return": "float[]"
+        },
+        "GetMovingDistance": {
+          "documentation": "Get the moving distance of the touchstop motion in mm.",
+          "parameters": [],
           "return": "float"
         }
+      }
+    },
+    "FTSensor": {
+      "description": "FTSensor class for Force Torque Sensor device. Supports TMFT300, OnRobot_HEX-E/H, ROBOTIQ_FT300, SCHUNK_Axia80, SRI_M4313N3C, WACOH sensors.",
+      "constructor": [
+        "FTSensor <variableName> = string",
+        "FTSensor <variableName> = string, string",
+        "FTSensor <variableName> = string, float[], float[], float",
+        "FTSensor <variableName> = string, string, float[], float[], float"
+      ],
+      "attributes": {
+        "X": { "type": "float", "mode": "R", "description": "The strength value of the X axis" },
+        "Y": { "type": "float", "mode": "R", "description": "The strength value of the Y axis" },
+        "Z": { "type": "float", "mode": "R", "description": "The strength value of the Z axis" },
+        "TX": { "type": "float", "mode": "R", "description": "The torque value of the X axis" },
+        "TY": { "type": "float", "mode": "R", "description": "The torque value of the Y axis" },
+        "TZ": { "type": "float", "mode": "R", "description": "The torque value of the Z axis" },
+        "F3D": { "type": "float", "mode": "R", "description": "The XYZ force strength value" },
+        "T3D": { "type": "float", "mode": "R", "description": "The XYZ torque value" },
+        "Value": { "type": "float[]", "mode": "R", "description": "The XYZ force strength value and torque value array {X, Y, Z, TX, TY, TZ}, Size = 6" },
+        "ForceValue": { "type": "float[]", "mode": "R", "description": "The XYZ force strength value array {X, Y, Z}, Size = 3" },
+        "TorqueValue": { "type": "float[]", "mode": "R", "description": "The XYZ torque value array {TX, TY, TZ}, Size = 3" },
+        "RefCoordX": { "type": "float", "mode": "R", "description": "The X-axis strength value measured based on the reference base set in the node" },
+        "RefCoordY": { "type": "float", "mode": "R", "description": "The Y-axis strength value measured based on the reference base set in the node" },
+        "RefCoordZ": { "type": "float", "mode": "R", "description": "The Z-axis strength value measured based on the reference base set in the node" },
+        "RefCoordTX": { "type": "float", "mode": "R", "description": "The X-axis torque value measured based on the reference base set in the node" },
+        "RefCoordTY": { "type": "float", "mode": "R", "description": "The Y-axis torque value measured based on the reference base set in the node" },
+        "RefCoordTZ": { "type": "float", "mode": "R", "description": "The Z-axis torque value measured based on the reference base set in the node" },
+        "RefCoordF3D": { "type": "float", "mode": "R", "description": "The XYZ strength measured based on the reference base set in the node" },
+        "RefCoordT3D": { "type": "float", "mode": "R", "description": "The XYZ torque measured based on the reference base set in the node" },
+        "RefCoordForceValue": { "type": "float[]", "mode": "R", "description": "The XYZ strength value matrix measured based on the reference base {RefCoordX, RefCoordY, RefCoordZ}, Size = 3" },
+        "RefCoordTorqueValue": { "type": "float[]", "mode": "R", "description": "The XYZ torque value matrix measured based on the reference base {RefCoordTX, RefCoordTY, RefCoordTZ}, Size = 3" },
+        "Model": { "type": "string", "mode": "R", "description": "The Model name of the F/T sensor" },
+        "Zero": { "type": "byte", "mode": "R/W", "description": "Turn on or off F/T sensor offset. 0=Zero OFF, 1=Zero ON" }
+      },
+      "methods": {
+        "Open": {
+          "documentation": "Open the connection to the Force Torque Sensor. Returns true on success, false on failure.",
+          "parameters": [],
+          "return": "bool"
+        },
+        "Close": {
+          "documentation": "Close the connection from the Force Torque Sensor. Returns true on success, false on failure.",
+          "parameters": [],
+          "return": "bool"
+        }
+      }
+    },
+    "Force": {
+      "description": "Force class for robot force control settings and motions. Used with FTSensor for force/torque-based control.",
+      "constructor": [
+        "Force <variableName> = string"
+      ],
+      "attributes": {
+      },
+      "methods": {
+        "Reset": {
+          "documentation": "Reset all the force control motion parameters to the default except the sensor name.",
+          "parameters": [],
+          "return": "void"
+        },
+        "Frame": {
+          "documentation": "Set the reference base of the force control motion. 0=Robot base, 1=Tool (default), 2=Current base, 3=Trajectory.",
+          "parameters": [
+            "int - Base (0=Robot base, 1=Tool, 2=Current base, 3=Trajectory)"
+          ],
+          "return": "void"
+        },
+        "Distance": {
+          "documentation": "Set the moving distance of the force control motion in mm. Available only in SetPoint F/T operation mode. <0=No limit, >=0=Limited distance.",
+          "parameters": [
+            "int - Distance in mm"
+          ],
+          "return": "void"
+        },
+        "ProtectionSpeed": {
+          "documentation": "Set the speed protection of the force control motion against axial force or torque.",
+          "parameters": [
+            "int - X (mm/s)", "int - Y (mm/s)", "int - Z (mm/s)", "int - RX (deg/s)", "int - RY (deg/s)", "int - RZ (deg/s)"
+          ],
+          "return": "void"
+        },
+        "FTSet": {
+          "documentation": "Set the force and torque of the force control motion. Positive/negative values denote force control direction. Can adjust PID control parameters.",
+          "parameters": [
+            "int/string - Axis (0-5 or FX/FY/FZ/TX/TY/TZ)", "bool - Enable", "float - Control value", "int - PID (0-4)", "int - Speed protection"
+          ],
+          "return": "void"
+        },
+        "Trajectory": {
+          "documentation": "Set the trajectory path of the force control motion. Trajectory F/T operation mode. Use subflow name or customized function.",
+          "parameters": [
+            "string/? - Subflow name or trajectory path function"
+          ],
+          "return": "void"
+        },
+        "Timeout": {
+          "documentation": "Set the stop condition of timeout in milliseconds. Available only in SetPoint F/T operation mode. <0=Disable, >=0=Timeout duration. Call with no params to cancel.",
+          "parameters": [
+            "int - Timeout in milliseconds"
+          ],
+          "return": "void"
+        },
+        "AllowPosTol": {
+          "documentation": "Set the stop condition of tolerant position error in mm. <0=Disable, >=0=Distance of tolerant error. Call with no params to cancel.",
+          "parameters": [
+            "int - Error distance in mm"
+          ],
+          "return": "void"
+        },
+        "DInput": {
+          "documentation": "Set the stop condition of the digital input. Call with no params to cancel.",
+          "parameters": [
+            "string - Module name (ControlBox/EndModule/ExtModuleN)", "int - Input channel", "int/string - Condition (0=L, 1=H)"
+          ],
+          "return": "void"
+        },
+        "AInput": {
+          "documentation": "Set the stop condition of the analog input. Call with no params to cancel.",
+          "parameters": [
+            "string - Module name", "int - Input channel", "int/string - Condition (0=>, 1=>=, 2===, 3=<=, 4=<)", "float - Condition value"
+          ],
+          "return": "void"
+        },
+        "FTReached": {
+          "documentation": "Set the stop condition of monitoring force/torque values. Call with no params to cancel.",
+          "parameters": [
+            "int/string - Force type (0-7 or FX/FY/FZ/TX/TY/TZ/F3D/T3D)", "bool - Enable", "float - Monitoring value"
+          ],
+          "return": "void"
+        },
+        "Condition": {
+          "documentation": "Set the stop condition of the conditional expression. Call with no params to cancel.",
+          "parameters": [
+            "bool/? - Conditional expression"
+          ],
+          "return": "void"
+        },
+        "Start": {
+          "documentation": "Start the force control motion. Returns result: 0=Not Working, 1=Working, 2=Timeout, 3=Distance reached, 4=IO triggered, 5=Resisted, 6=Error, 14=Over Speed, 201-206=Various stop conditions.",
+          "parameters": [
+            "bool - Zero out force sensor before execution (default true)", "bool - Enable tool gravity compensation (default false)"
+          ],
+          "return": "int"
+        },
+        "Stop": {
+          "documentation": "Stop the force control motion. Returns result value after force control motion stops.",
+          "parameters": [],
+          "return": "int"
+        }
+      }
+    }
+  },
+  "parameterizedObjects": {
+    "Point": {
+      "description": "Access point data in the project. Syntax: Point[\"name\"].attribute",
+      "indexType": "string",
+      "attributes": {
+        "Value": { "type": "float[]", "mode": "R/W", "description": "The coordinate of the point {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "Joint": { "type": "float[]", "mode": "R/W", "description": "The joint angle {J1, J2, J3, J4, J5, J6}, Size = 6" },
+        "Pose": { "type": "int[]", "mode": "R/W", "description": "The pose of the robot {Config1, Config2, Config3}, Size = 3" },
+        "Flange": { "type": "float[]", "mode": "R", "description": "The coordinate of the flange's center {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "BaseName": { "type": "string", "mode": "R", "description": "The name of the base" },
+        "TCPName": { "type": "string", "mode": "R", "description": "The name of the TCP" },
+        "TeachValue": { "type": "float[]", "mode": "R", "description": "The original coordinate of the teaching point {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "TeachJoint": { "type": "float[]", "mode": "R", "description": "The joint angle at the teach point {J1, J2, J3, J4, J5, J6}, Size = 6" },
+        "TeachPose": { "type": "int[]", "mode": "R", "description": "The original pose of the robot on the teaching point {Config1, Config2, Config3}, Size = 3" }
+      }
+    },
+    "Base": {
+      "description": "Access base coordinate data. Syntax: Base[\"name\"].attribute or Base[\"name\", int].attribute",
+      "indexType": "string or string,int",
+      "attributes": {
+        "Value": { "type": "float[]", "mode": "R/W", "description": "The base value {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "Type": { "type": "string", "mode": "R", "description": "The type of the base: 'R'=Robot Base, 'V'=Vision Base, 'C'=Custom Base" },
+        "TeachValue": { "type": "float[]", "mode": "R", "description": "The original teach base value {X, Y, Z, RX, RY, RZ}, Size = 6" }
+      }
+    },
+    "TCP": {
+      "description": "Access TCP (Tool Center Point) data. Syntax: TCP[\"name\"].attribute",
+      "indexType": "string",
+      "attributes": {
+        "Value": { "type": "float[]", "mode": "R/W", "description": "The value of the TCP {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "Mass": { "type": "float", "mode": "R/W", "description": "The value of mass in kg" },
+        "MOI": { "type": "float[]", "mode": "R/W", "description": "The value of the Principal Moments of Inertia {Ixx, Iyy, Izz}, Size = 3" },
+        "MCF": { "type": "float[]", "mode": "R/W", "description": "The value of Mass center frame with principle axes w.r.t tool frame {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "TeachValue": { "type": "float[]", "mode": "R", "description": "The original value of the TCP {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "TeachMass": { "type": "float", "mode": "R", "description": "The original value of mass in kg" },
+        "TeachMOI": { "type": "float[]", "mode": "R", "description": "The original value of the Principal Moments of Inertia {Ixx, Iyy, Izz}, Size = 3" },
+        "TeachMCF": { "type": "float[]", "mode": "R", "description": "The original value of Mass center frame {X, Y, Z, RX, RY, RZ}, Size = 6" }
+      }
+    },
+    "VPoint": {
+      "description": "Access vision point data. Syntax: VPoint[\"jobName\"].attribute",
+      "indexType": "string",
+      "attributes": {
+        "Value": { "type": "float[]", "mode": "R/W", "description": "The initial coordinate of VPoint {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "BaseName": { "type": "string", "mode": "R", "description": "The name of the VPoint base" },
+        "TeachValue": { "type": "float[]", "mode": "R", "description": "The original job initial coordinate of VPoint {X, Y, Z, RX, RY, RZ}, Size = 6" }
+      }
+    },
+    "IO": {
+      "description": "Access digital and analog I/O. Syntax: IO[\"moduleName\"].attribute. Modules: ControlBox, EndModule, ExtModule0..N, Safety",
+      "indexType": "string",
+      "attributes": {
+        "DI": { "type": "byte[]", "mode": "R", "description": "Digital input array. 0=Low, 1=High" },
+        "DO": { "type": "byte[]", "mode": "R/W", "description": "Digital output array. 0=Low, 1=High" },
+        "AI": { "type": "float[]", "mode": "R", "description": "Analog input array. -10.24V to +10.24V" },
+        "AO": { "type": "float[]", "mode": "R/W", "description": "Analog output array. -10.00V to +10.00V" },
+        "InstantDI": { "type": "byte[]", "mode": "R", "description": "Digital input (Instant Command). 0=Low, 1=High" },
+        "InstantDO": { "type": "byte[]", "mode": "R/W", "description": "Digital output (Instant Command). 0=Low, 1=High" },
+        "InstantAI": { "type": "float[]", "mode": "R", "description": "Analog input (Instant Command). -10.24V to +10.24V" },
+        "InstantAO": { "type": "float[]", "mode": "R/W", "description": "Analog output (Instant Command). -10.00V to +10.00V" },
+        "SI": { "type": "byte[]", "mode": "R", "description": "Safety function input (Safety module only). 0=Low, 1=High" },
+        "SO": { "type": "byte[]", "mode": "R", "description": "Safety function output (Safety module only). 0=Low, 1=High" }
+      }
+    },
+    "Robot": {
+      "description": "Access robot status and configuration. Syntax: Robot[0].attribute (index fixed at 0)",
+      "indexType": "int",
+      "attributes": {
+        "CoordRobot": { "type": "float[]", "mode": "R", "description": "TCP coordinate relative to RobotBase {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "CoordBase": { "type": "float[]", "mode": "R", "description": "TCP coordinate relative to current base {X, Y, Z, RX, RY, RZ}, Size = 6" },
+        "Joint": { "type": "float[]", "mode": "R", "description": "Current robot joint angles {J1, J2, J3, J4, J5, J6}, Size = 6" },
+        "BaseName": { "type": "string", "mode": "R", "description": "The name of the current base" },
+        "TCPName": { "type": "string", "mode": "R", "description": "The name of the current TCP" },
+        "Payload": { "type": "float", "mode": "R", "description": "The current compensatory payload in kg" },
+        "CameraLight": { "type": "byte", "mode": "R/W", "description": "The lighting of the robot's camera. 0=Off, 1=On" },
+        "InstantCameraLight": { "type": "byte", "mode": "R/W", "description": "The lighting of the robot's camera (Instant Command). 0=Off, 1=On" },
+        "TCPForce3D": { "type": "float", "mode": "R", "description": "Current TCP force as composite of x, y, z in N" },
+        "TCPSpeed3D": { "type": "float", "mode": "R", "description": "Current TCP speed as composite of x, y, z in mm/s" }
+      }
+    },
+    "FT": {
+      "description": "Access force/torque sensor data. Syntax: FT[\"sensorName\"].attribute",
+      "indexType": "string",
+      "attributes": {
+        "X": { "type": "float", "mode": "R", "description": "The force value of the X axis" },
+        "Y": { "type": "float", "mode": "R", "description": "The force value of the Y axis" },
+        "Z": { "type": "float", "mode": "R", "description": "The force value of the Z axis" },
+        "TX": { "type": "float", "mode": "R", "description": "The torque value of the X axis" },
+        "TY": { "type": "float", "mode": "R", "description": "The torque value of the Y axis" },
+        "TZ": { "type": "float", "mode": "R", "description": "The torque value of the Z axis" },
+        "F3D": { "type": "float", "mode": "R", "description": "The XYZ resultant force value" },
+        "T3D": { "type": "float", "mode": "R", "description": "The XYZ resultant torque value" },
+        "Value": { "type": "float[]", "mode": "R", "description": "The XYZ force and torque array {X, Y, Z, TX, TY, TZ}, Size = 6" },
+        "ForceValue": { "type": "float[]", "mode": "R", "description": "The XYZ force value array {X, Y, Z}, Size = 3" },
+        "TorqueValue": { "type": "float[]", "mode": "R", "description": "The XYZ torque value array {TX, TY, TZ}, Size = 3" },
+        "RefCoordX": { "type": "float", "mode": "R", "description": "X-axis force based on reference base (Force Control only)" },
+        "RefCoordY": { "type": "float", "mode": "R", "description": "Y-axis force based on reference base (Force Control only)" },
+        "RefCoordZ": { "type": "float", "mode": "R", "description": "Z-axis force based on reference base (Force Control only)" },
+        "RefCoordTX": { "type": "float", "mode": "R", "description": "X-axis torque based on reference base (Force Control only)" },
+        "RefCoordTY": { "type": "float", "mode": "R", "description": "Y-axis torque based on reference base (Force Control only)" },
+        "RefCoordTZ": { "type": "float", "mode": "R", "description": "Z-axis torque based on reference base (Force Control only)" },
+        "RefCoordF3D": { "type": "float", "mode": "R", "description": "XYZ resultant force based on reference base (Force Control only)" },
+        "RefCoordT3D": { "type": "float", "mode": "R", "description": "XYZ resultant torque based on reference base (Force Control only)" },
+        "RefCoordForceValue": { "type": "float[]", "mode": "R", "description": "XYZ force array based on reference base {X, Y, Z}, Size = 3" },
+        "RefCoordTorqueValue": { "type": "float[]", "mode": "R", "description": "XYZ torque array based on reference base {TX, TY, TZ}, Size = 3" },
+        "Model": { "type": "string", "mode": "R", "description": "The model name of the F/T sensor" },
+        "Zero": { "type": "byte", "mode": "R/W", "description": "Turn on or off F/T sensor offset. 0=Zero OFF, 1=Zero ON" }
+      }
+    },
+    "Env": {
+      "description": "Access current application environment status. Syntax: Env.attribute (no index required)",
+      "indexType": "none",
+      "attributes": {
+        "AppVersion": { "type": "string", "mode": "R", "description": "Application Version (e.g., '2.24.1000')" },
+        "AppType": { "type": "int", "mode": "R", "description": "Application Type: 1=Real Robot, 2=Virtual Robot, 3=TM AI+ AOI Edge" },
+        "RobotModel": { "type": "string", "mode": "R", "description": "Robot Model (e.g., 'TM12S', 'TM5-900')" },
+        "CurrentProject": { "type": "string", "mode": "R", "description": "Current Project Name" },
+        "RunningProject": { "type": "string", "mode": "R", "description": "Current Running Project Name" },
+        "RunningSpeed": { "type": "float", "mode": "R", "description": "Current Running Speed in percentage (%)" },
+        "OperationMode": { "type": "int", "mode": "R", "description": "Operation Mode: 0=Manual, 1=Auto" }
       }
     }
   },
@@ -170,152 +866,1891 @@
     "return": "string",
     "documentation": "Retrieve a substring from input string",
     "signatures": [
-      [""],
+      ["string - Input string", "int - The starting character of string", "int - The length of substring"],
+      ["string - Input string", "int - The starting character of string"],
+      ["string - Input string", "int - The target string to be searched, the substring will start at its position, if it is found", "int - The length of substring"],
+      ["string - Input string", "int - The target string to be searched, the substring will start at its position, if it is found"],
+      ["string - Input string", "string - Prefix", "string - Suffix", "int - The number of occurrence"],
+      ["string - Input string", "string - Prefix", "string - Suffix"]
+    ]
+  },
+  "String_Split": {
+    "return": "string[]",
+    "documentation": "Split the string using specified separator.",
+    "signatures": [
+      ["string - Input string", "string - Separator", "int - Format (0,1,2,3) see documentation"],
+      ["string - Input string", "string - Separator"]
+    ]
+  },
+  "String_Replace": {
+    "return": "string",
+    "documentation": "Return a new string in which all occurrences of a specified string in the input string are replaced with another specified string",
+    "signatures": [
+      ["string - Input string", "string - String to be replaced", "string - String to replace all occurrences of old value"]
+    ]
+  },
+  "String_Trim": {
+    "return": "string",
+    "documentation": "Return a new string in which all leading and trailing occurrences of specified characters or white-space characters from the input string are removed",
+    "signatures": [
+      ["string - Input string"],
+      ["string - Input string", "string - Specified characters to be removed from leading occurrences"],
+      ["string - Input string", "string - Characters to be removed from leading occurrences", "string - Characters to be removed from trailing occurrences"]
+    ]
+  },
+  "String_ToLower": {
+    "return": "string",
+    "documentation": "Change all the characters in a string to lower case",
+    "signatures": [
+      ["string - Input string"]
+    ]
+  },
+  "String_ToUpper": {
+    "return": "string",
+    "documentation": "Change all the characters in a string to upper case",
+    "signatures": [
+      ["string - Input string"]
+    ]
+  },
+  "Array_Append": {
+    "return": "?[]",
+    "documentation": "Add new data as the elements in the end of the array.",
+    "signatures": [
+      ["?[] - Array to be appended", "?[] - Data or the array to add"],
       ["", ""]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "Array_Insert": {
+    "return": "?[]",
+    "documentation": "Insert data as the elements in the array.",
     "signatures": [
-      [""],
+      ["?[] - Start Array", "int - Index starting address","?[] - Data or the array to add"],
       ["", ""]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "Array_Remove": {
+    "return": "?[]",
+    "documentation": "Delete data as the elements in the array.",
     "signatures": [
-      [""],
+      ["?[] - Start Array", "int - Index starting address", "int - Elements to remove"],
+      ["?[] - Start Array", "int - Index starting address"]
+    ]
+  },
+  "Array_Equals": {
+    "return": "bool",
+    "documentation": "Determine whether the specified two arrays are identical",
+    "signatures": [
+      ["?[] - Input array1", "?[] - Input array2"],
+      ["?[] - Input array1", "int - Starting index array1", "?[] - Input array2", "int - Starting index array1", "int - Elements to be compared"]
+    ]
+  },
+  "Array_IndexOf": {
+    "return": "int",
+    "documentation": "Search for the index number of the first occurrence within array elements.",
+    "signatures": [
+      ["?[] - Input array", "? - Target element to search", "int - Start index of the array"],
+      ["?[] - Input array", "? - Target element to search"]
+    ]
+  },
+  "Array_LastIndexOf": {
+    "return": "int",
+    "documentation": "Search for the index number of the last occurrence within array elements.",
+    "signatures": [
+      ["?[] - Input array", "? - Target element to search", "int - Start index of the array"],
+      ["?[] - Input array", "? - Target element to search"]
+    ]
+  },
+  "Array_Reverse": {
+    "return": "?[]",
+    "documentation": "Reverse the sequence of the elements in the array",
+    "signatures": [
+      ["?[] - Input array"],
+      ["?[] - Input array", "int - Elements to be viewed as a section (2,4,8)"]
+    ]
+  },
+  "Array_Sort": {
+    "return": "?[]",
+    "documentation": "Sort the elements in a array",
+    "signatures": [
+      ["?[] - Input array", "int - Sorting direction (0=Ascending (Default) ,1=Descending)"],
+      ["?[] - Input array"]
+    ]
+  },
+  "Array_SubElements": {
+    "return": "?[]",
+    "documentation": "Retrieve the sub-elements from input array",
+    "signatures": [
+      ["?[] - Input array", "int - Starting index of sub-elements", "int - Number of element in sub-elements"],
+      ["?[] - Input array", "int - Number of element in sub-elements"]
+    ]
+  },
+  "ValueReverse": {
+    "return": "? or ?[]",
+    "documentation": "Reverse the sequence of byte units inside input data (int 2 bytes or 4 bytes, float 4 bytes, double 8 bytes); or reverse the sequence of character of string.",
+    "signatures": [
+      ["int or int[] - Input value", "int - input value follows int32 or int16 format (0=int32 (Default) ,1=int16 can reverte to int32,2=int16 forced)"],
+      ["? - Input value"],
+      ["?[] - Input value"]
+    ]
+  },
+  "GetBytes": {
+    "return": "byte[]",
+    "documentation": "Convert arbitrary data type to byte array.",
+    "signatures": [
+      ["? - Input data", "int - Endian mode (0=Little (Default), 1=Big)"],
+      ["? - Input data"]
+    ]
+  },
+  "GetString": {
+    "return": "string",
+    "documentation": "Convert arbitrary data type to string",
+    "signatures": [
+      ["? - Input data" ,"int - Input String format" , "int - Output string format"],
+      ["? - Input data", "int - Output string format"],
+      ["? - Input data"]
+    ]
+  },
+  "GetToken": {
+    "return": "string or byte[]",
+    "documentation": "Retrieve a substring from input string, or the sub-array from the input byte[] array",
+    "signatures": [
+      ["string - Input string", "string - Prefix", "string - Suffix", "int - Number of substring to retrieve", "int - Remove option"],
+      ["string - Input string", "string - Prefix", "string - Suffix", "int - Number of substring to retrieve"],
+      ["string - Input string", "string - Prefix", "string - Suffix"],
+      ["string - Input string", "byte[] - Prefix", "byte[] - Suffix", "int - Number of substring to retrieve", "int - Remove option"],
+      ["string - Input string", "byte[] - Prefix", "byte[] - Suffix", "int - Number of substring to retrieve"],
+      ["string - Input string", "byte[] - Prefix", "byte[] - Suffix"],
+      ["byte[] - Input string", "string - Prefix", "string - Suffix", "int - Number of substring to retrieve", "int - Remove option"],
+      ["byte[] - Input string", "string - Prefix", "string - Suffix", "int - Number of substring to retrieve"],
+      ["byte[] - Input string", "string - Prefix", "string - Suffix"],
+      ["byte[] - Input string", "byte[] - Prefix", "byte[] - Suffix", "int - Number of substring to retrieve", "int - Remove option"],
+      ["byte[] - Input string", "byte[] - Prefix", "byte[] - Suffix", "int - Number of substring to retrieve"],
+      ["byte[] - Input string", "byte[] - Prefix", "byte[] - Suffix"]
+    ]
+  },
+  "GetAllTokens": {
+    "return": "string[]",
+    "documentation": "Retrieve all the substrings from input string, which meets the given condition",
+    "signatures": [
+      ["string - Input string", "string - Prefix", "string - Suffix", "int - Remove option"],
+      ["string - Input string", "string - Prefix", "string - Suffix"]
+    ]
+  },
+  "GetNow": {
+    "return": "string",
+    "documentation": "Get the current system time",
+    "signatures": [
+      ["string - The date and time format"],
+      ["void - No Format"]
+    ]
+  },
+  "GetNowStamp": {
+    "return": ["int", "double", "int", "double", "bool", "bool"],
+    "documentation": "Get the total run time or difference in total run time",
+    "signatures": [
+      ["void - No Parameter"],
+      ["bool - Use double format to record project's total run time"],
+      ["int - Previous recorded run time in ms"],
+      ["double - Previous recorded run time in ms"],
+      ["int - Previous recorded run time in ms", "int - The expected run time difference"],
+      ["double - Previous recorded run time in ms", "double - The expected run time difference"]
+    ]
+  },
+  "GetVarValue": {
+    "return": "?",
+    "documentation": "Retrieve the value of the variable value. Users can use the string to combine the variable names, and then retrieve the combined value of the variables.",
+    "signatures": [
+      ["string - Name of the Variable"]
+    ]
+  },
+  "SetVarValue": {
+    "return": "bool",
+    "documentation": "For variable value settings, users can use a string to combine the variable names to set the variable value of the combined variable names.",
+    "signatures": [
+      ["string - Name of the Variable", "? - The variable Value"]
+    ]
+  },
+  "Length": {
+    "return": "int",
+    "documentation": "Acquire the number of byte of input data, length of string or length of array (number of elements in array)",
+    "signatures": [
+      ["? - Input data"]
+    ]
+  },
+  "Ctrl": {
+    "return": "string",
+    "documentation": "Change the integer or string to control characters",
+    "signatures": [
+      ["int - The input integer"],
+      ["string - Input string"],
+      ["byte[] - The input byte array"]
+    ]
+  },
+  "XOR8": {
+    "return": "byte",
+    "documentation": "Utilize XOR 8 bits algorithm to compute the checksum",
+    "signatures": [
+      ["byte[] - The input byte array", "int - The starting index", "int - The number of elements"],
+      ["byte[] - The input byte array", "int - The starting index"],
+      ["byte[] - The input byte array"]
+    ]
+  },
+  "SUM8": {
+    "return": "byte",
+    "documentation": "Utilize SUM 8 bits algorithm to compute the checksum",
+    "signatures": [
+      ["byte[] - The input byte array", "int - The starting index", "int - The number of elements"],
+      ["byte[] - The input byte array", "int - The starting index"],
+      ["byte[] - The input byte array"]
+    ]
+  },
+  "SUM16": {
+    "return": "byte[]",
+    "documentation": "Utilize SUM 16 bits algorithm to compute the checksum",
+    "signatures": [
+      ["byte[] - The input byte array", "int - The starting index", "int - The number of elements"],
+      ["byte[] - The input byte array", "int - The starting index"],
+      ["byte[] - The input byte array"]
+    ]
+  },
+  "SUM32": {
+    "return": "byte[]",
+    "documentation": "Utilize SUM 32 bits algorithm to compute the checksum",
+    "signatures": [
+      ["byte[] - The input byte array", "int - The starting index", "int - The number of elements"],
+      ["byte[] - The input byte array", "int - The starting index"],
+      ["byte[] - The input byte array"]
+    ]
+  },
+  "CRC16": {
+    "return": "byte[]",
+    "documentation": "Utilize CRC 16 bits algorithm to compute the checksum",
+    "signatures": [
+      ["int - CRC16 algorithm", "byte[] - The input byte array", "int - Starting index", "int - Number of elements to be computed"],
+      ["int - CRC16 algorithm", "byte[] - The input byte array", "int - Starting index"],
+      ["int - CRC16 algorithm", "byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Starting index", "int - Number of elements to be computed"],
+      ["byte[] - The input byte array", "int - Starting index"],
+      ["byte[] - The input byte array"]
+    ]
+  },
+  "CRC32": {
+    "return": "byte[]",
+    "documentation": "Utilize CRC 32 bits algorithm to compute the checksum",
+    "signatures": [
+      ["byte[] - The input byte array", "int - Starting index", "int - Number of elements to be computed"],
+      ["byte[] - The input byte array", "int - Starting index"],
+      ["byte[] - The input byte array"]
+    ]
+  },
+  "ListenPacket": {
+    "return": "string",
+    "documentation": "Pack the string contents as the compatible protocol for the Listen Node (External Script Control Mode)",
+    "signatures": [
+      ["string - User defined Header.", "string - The data section in Listen Node communication format"],
+      [ "string - The data section in Listen Node communication format"]
+    ]
+  },
+  "ListenSend": {
+    "return": "int",
+    "documentation": "Send TMSTA, the communication protocol of Listen node, to the client devices connected to the Listen Server currently.",
+    "signatures": [
+      ["string - Target IP", "int - TMSTA SubCmd numbering", "? - Value to send"],
+      ["int - TMSTA SubCmd numbering", "? - Value to send"]
+    ]
+  },
+  "VarSync": {
+    "return": "int",
+    "documentation": "Send the Variable object to TMmanager (Robot Management System)",
+    "signatures": [
+      ["int - Maximum retries", "int - Duration between two retries", "? - Name of variables to be sent"],
+      ["int - Maximum retries", "? - Name of variables to be sent"],
+      ["? - Name of variables to be sent"]
+    ]
+  },
+  "Exit": {
+    "return": "void",
+    "documentation": "Stop the project running.",
+    "signatures": [
+      ["bool - Wait for the end of the motion", "int - Ending code"],
+      ["bool - Wait for the end of the motion"],
+      ["void - No Input"],
+      ["int - Ending code"]
+    ]
+  },
+  "Pause": {
+    "return": "bool",
+    "documentation": "Pause the project and the motion of the robot other than non-paused threads and external script processes.",
+    "signatures": [
+      ["void - No Parameter"]
+    ]
+  },
+  "Resume": {
+    "return": "bool",
+    "documentation": "Resume the project and the motion of the robot.",
+    "signatures": [
+      ["void - No Parameter"]
+    ]
+  },
+  "WaitFor": {
+    "return": "bool",
+    "documentation": "The loop wait condition stands or time out on waiting.",
+    "signatures": [
+      ["bool - Wait condition", "int - wait time (ms)"],
+      ["int - wait time (ms)"]
+    ]
+  },
+  "Sleep": {
+    "return": "bool",
+    "documentation": "Stop the thread in the time specified. Same as WaitFor(int).",
+    "signatures": [
+      ["int - wait time (ms)"]
+    ]
+  },
+  "Display": {
+    "return": "bool",
+    "documentation": "Display contents on the TMflow dashboard.",
+    "signatures": [
+      ["string - Headline text color", "string - Headline background color", "string - Headline text", "string - Text"],
+      ["string - Headline text", "string - Text"],
+      ["string - Text"]
+    ]
+  },
+  "ExecText": {
+    "return": "bool",
+    "documentation": "Check and execute the string content input, which must comply with the TMscript definition.",
+    "signatures": [
+      ["string - The string content to execute"]
+    ]
+  },
+  "ExecFile": {
+    "return": "bool",
+    "documentation": "Check and execute the file path input, where the string content read from the file must comply with the TMscript definition.",
+    "signatures": [
+      ["string - The file path to execute"]
+    ]
+  },
+  "RedirectToProject": {
+    "return": "void",
+    "documentation": "Stop the currently running project and proceed to execute the specified project.",
+    "signatures": [
+      ["string - The project name"]
+    ]
+  },
+  "abs": {
+    "return": ["int", "float", "double"],
+    "documentation": "Return the absolute value of the designate number",
+    "signatures": [
+      ["int - Input number in integer"],
+      ["float - Input number in float"],
+      ["double - Input number in double"]
+    ]
+  },
+  "pow": {
+    "return": ["int", "float", "double"],
+    "documentation": "Return the power of the designate base and exponent",
+    "signatures": [
+      ["int - Input number in integer"],
+      ["float - Input number in float"],
+      ["double - Input number in double"]
+    ]
+  },
+  "sqrt": {
+    "return": ["float", "double"],
+    "documentation": "Return the square root of the designate number",
+    "signatures": [
+      ["float - Input number in float"],
+      ["double - Input number in double"]
+    ]
+  },
+  "ceil": {
+    "return": ["float", "double"],
+    "documentation": "Return a number rounded upward to its nearest integer.",
+    "signatures": [
+      ["float - Input number in float"],
+      ["double - Input number in double"]
+    ]
+  },
+  "floor": {
+    "return": ["float", "double"],
+    "documentation": "Return a number rounded downward to its nearest integer.",
+    "signatures": [
+      ["float - Input number in float"],
+      ["double - Input number in double"]
+    ]
+  },
+  "round": {
+    "return": ["float", "float", "double", "double"],
+    "documentation": "Return a number rounded to its nearest integer.",
+    "signatures": [
+      ["float - Input number in float", "int - digits after the returned decimal point"],
+      ["float - Input number in float"],
+      ["double - Input number in double", "int - digits after the returned decimal point"],
+      ["double - Input number in double"]
+    ]
+  },
+  "random": {
+    "return": ["float", "int", "int"],
+    "documentation": "Return a random value in float between 0 and 1 or in an integer between the lower bound and the upper bound.",
+    "signatures": [
+      ["void - No Parameter"],
+      ["int - Upper bound of random value"],
+      ["int - Upper bound of random value", "int - Lower bound of random value"]
+    ]
+  },
+  "sum": {
+    "return": ["int", "double"],
+    "documentation": "Return the sum of the given numbers or the array of numbers.",
+    "signatures": [
+      ["? - input values"],
+      ["? - input values"]
+    ]
+  },
+  "average": {
+    "return": "double",
+    "documentation": "Return the average of the given numbers or the array of numbers.",
+    "signatures": [
+      ["? - input values"]
+    ]
+  },
+  "stdevp": {
+    "return": "double",
+    "documentation": "See Documentation",
+    "signatures": [
+      ["? - input values"]
+    ]
+  },
+  "stdevs": {
+    "return": "double",
+    "documentation": "See Documentation",
+    "signatures": [
+      ["? - input values"]
+    ]
+  },
+  "min": {
+    "return": ["int", "double"],
+    "documentation": "Return the minimum of the given numbers or the array of numbers.",
+    "signatures": [
+      ["? - input values"],
+      ["? - input values"]
+    ]
+  },
+  "max": {
+    "return": ["int", "double"],
+    "documentation": "Return the maximum of the given numbers or the array of numbers.",
+    "signatures": [
+      ["? - input values"],
+      ["? - input values"]
+    ]
+  },
+  "d2r": {
+    "return": ["float", "double"],
+    "documentation": "Convert the value of degree to radian",
+    "signatures": [
+      ["float - Input the value of degree in float"],
+      ["double - Input the value of degree in double"]
+    ]
+  },
+  "r2d": {
+    "return": ["float", "double"],
+    "documentation": "Convert the value of radian to degree",
+    "signatures": [
+      ["float - Input the value of radian in float"],
+      ["double - Input the value of radian in double"]
+    ]
+  },
+  "sin": {
+    "return": ["float", "double"],
+    "documentation": "Return the sine of the input value of degree",
+    "signatures": [
+      ["float - Input the value of degree in float"],
+      ["double - Input the value of degree in double"]
+    ]
+  },
+  "cos": {
+    "return": ["float", "double"],
+    "documentation": "Return the cosine of the input value of degree",
+    "signatures": [
+      ["float - Input the value of degree in float"],
+      ["double - Input the value of degree in double"]
+    ]
+  },
+  "tan": {
+    "return": ["float", "double"],
+    "documentation": "Return the tangent of the input value of degree",
+    "signatures": [
+      ["float - Input the value of degree in float"],
+      ["double - Input the value of degree in double"]
+    ]
+  },
+  "asin": {
+    "return": ["float", "double"],
+    "documentation": "Return the arcsine of the input value in degree",
+    "signatures": [
+      ["float - Input the sine value in float"],
+      ["double - Input the sine value in double"]
+    ]
+  },
+  "acos": {
+    "return": ["float", "double"],
+    "documentation": "Return the arccosine of the input value in degree",
+    "signatures": [
+      ["float - Input the cosine value in float"],
+      ["double - Input the cosine value in double"]
+    ]
+  },
+  "atan": {
+    "return": ["float", "double"],
+    "documentation": "Return the arctangent of the input value in degree",
+    "signatures": [
+      ["float - Input the cosine value in float"],
+      ["double - Input the cosine value in double"]
+    ]
+  },
+  "atan2": {
+    "return": ["float", "double"],
+    "documentation": "Return the arctangent of the quotient of it arguments",
+    "signatures": [
+      ["float - Representing the Y coordinate", "float - Representing the X coordinate"],
+      ["double - Representing the Y coordinate", "double - Representing the X coordinate"]
+    ]
+  },
+  "log": {
+    "return": ["float", "double", "float", "double"],
+    "documentation": "Return the natural logarithm of the input value",
+    "signatures": [
+      ["float - Input value", "double - Base of the logarithm"],
+      ["double - Input value", "double - Base of the logarithm"],
+      ["float - Input value"],
+      ["double - Input value"]
+    ]
+  },
+  "log10": {
+    "return": ["float", "double"],
+    "documentation": "Return the logarithm of the input value with the base 10",
+    "signatures": [
+      ["float - Input value"],
+      ["double - Input value"]
+    ]
+  },
+  "norm2": {
+    "return": "float",
+    "documentation": "Return the second norm of a specified vector.",
+    "signatures": [
+      ["float[] - Vector"]
+    ]
+  },
+  "dist": {
+    "return": "float",
+    "documentation": "Return the distance between the two coordinates.",
+    "signatures": [
+      ["float - First coordinate", "float - Second coordinate"],
       ["", ""]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "trans": {
+    "return": "float[]",
+    "documentation": "Return the displacement and rotation angle from one specified point to another point.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - First Point", "float[] - Second Point", "bool - Reference coordinate"],
+      ["float[] - First Point", "float[] - Second Point"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "inversetrans": {
+    "return": "float[]",
+    "documentation": "Return the displacement and rotation angle {x, y, z, rx, ry, rz} opposite to the input displacement and rotation angle {x, y, z, rx, ry, rz}.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - displacement and rotation angle", "bool - Reference coordinate"],
+      ["float[] - displacement and rotation angle"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "applytrans": {
+    "return": "float[]",
+    "documentation": "Return the terminal point computed by applied the displacement and rotation angle to the specified point.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - Initial point" ,"float[] - Displacement and rotation angle", "bool - Reference coordinate"],
+      ["float[] - Initial point" ,"float[] - Displacement and rotation angle"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "interpoint": {
+    "return": "float[]",
+    "documentation": "Return the interpolate point between two points according to the specified points and ratio",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - First Point", "float[] - Second Point", "float - Ratio"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "changeref": {
+    "return": "float[]",
+    "documentation": "Return the new coordinate value described with the new base converted from the original coordinate value",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - Coordinate value of the original point", "float[] - Original reference base", "float[] - New reference base"],
+      ["float[] - Coordinate value of the original point", "float[] - Original reference base"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "points2coord": {
+    "return": "float[]",
+    "documentation": "Calculate the coordinate plane of the input points and return the values of the plane parameters converted by the three points on the plane",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - Origin coordinates in the coordinate plane", "float[] - Any point on the X axis in the plane", "float[] - Any point on the +X and +Y in the plane"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "intercoord": {
+    "return": "float[]",
+    "documentation": "Convert two input planes into a new plane.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - First input plane", "float[] - Second input plane"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "coorshift": {
+    "return": "float[]",
+    "documentation": "Calculate a new coordinate by adding a shift value to the original coordinate, where the shift depends on the position and direction of the original coordinate.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - Base Value", "float[] - Shift Value"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "inversekin": {
+    "return": "float[]",
+    "documentation": "Convert the Cartesian coordinates to joint angles.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - Coordinates to be converted"],
+      ["float[] - Coordinates to be converted", "int[] - Pose configuration parameters"],
+      ["float[] - Coordinates to be converted", "float[] - Pose configuration parameters"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "forwardkin": {
+    "return": "float[]",
+    "documentation": "Convert joint angles to the Cartesian coordinates.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - Joint angle elements to be converted"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "joint2pose": {
+    "return": "int[]",
+    "documentation": "Convert joint angles to the Cartesian coordinates.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["float[] - Joint angle elements to be converted"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "File_ReadBytes": {
+    "return": "byte[]",
+    "documentation": "Read the file content and return in the type of byte[].",
     "signatures": [
-      [""],
-      ["", ""]
+      ["string - File path"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "File_ReadText": {
+    "return": "string",
+    "documentation": "Read the file content and return in the type of string.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["string - File path"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "File_ReadLines": {
+    "return": "string[]",
+    "documentation": "Read the file content and return in the type of string separated by new line characters.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["string - File path"],
+      ["string - File path", "int - Start line", "int - Lines to read"],
+      ["string - File path", "int - Start line"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "File_NextLine": {
+    "return": ["string","string","string","string[]","string[]"],
+    "documentation": "Record the last read file path, and continue to read the next line of the file content or open the file to read.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["string - File path"],
+      ["string - File path", "bool - Open the file to read"],
+      ["void - No Parameter"],
+      ["string - File path", "int - Parameters to read"],
+      ["int - Parameters to read"]
     ]
   },
-  "": {
-    "return": "",
-    "documentation": "",
+  "File_NextEOF": {
+    "return": "bool",
+    "documentation": "Try the last read file path for reading to the end of the file already.",
     "signatures": [
-      [""],
-      ["", ""]
+      ["void - No Parameter"]
+    ]
+  },
+  "File_WriteBytes": {
+    "return": "bool",
+    "documentation": "Put the data content into an array in byte and write to a file.",
+    "signatures": [
+      ["string - File path", "? - Values to write", "int - Overwrite or append" , "int - Starting index", "int - Lenght of value"],
+      ["string - File path", "? - Values to write", "int - Overwrite or append" , "int - Starting index"],
+      ["string - File path", "? - Values to write", "int - Overwrite or append"],
+      ["string - File path", "? - Values to write"]
+    ]
+  },
+  "File_WriteText": {
+    "return": "bool",
+    "documentation": "Put the data content in a string and write to a file.",
+    "signatures": [
+      ["string - File path", "? - Values to write", "int - Overwrite or append" , "int - Starting index", "int - Lenght of value"],
+      ["string - File path", "? - Values to write", "int - Overwrite or append" , "int - Starting index"],
+      ["string - File path", "? - Values to write", "int - Overwrite or append"],
+      ["string - File path", "? - Values to write"]
+    ]
+  },
+  "File_WriteLine": {
+    "return": "bool",
+    "documentation": "Put the data content in a string with newline characters (0x0D 0x0A) in the end and write to a file.",
+    "signatures": [
+      ["string - File path", "? - Values to write", "int - Overwrite or append" , "int - Starting index", "int - Lenght of value"],
+      ["string - File path", "? - Values to write", "int - Overwrite or append" , "int - Starting index"],
+      ["string - File path", "? - Values to write", "int - Overwrite or append"],
+      ["string - File path", "? - Values to write"]
+    ]
+  },
+  "File_WriteLines": {
+    "return": "bool",
+    "documentation": "Put the data content in a string array with newline characters (0x0D 0x0A) in the end and write to a file.",
+    "signatures": [
+      ["string - File path", "? - Values to write", "int - Overwrite or append" , "int - Starting index", "int - Lenght of value"],
+      ["string - File path", "? - Values to write", "int - Overwrite or append" , "int - Starting index"],
+      ["string - File path", "? - Values to write", "int - Overwrite or append"],
+      ["string - File path", "? - Values to write"]
+    ]
+  },
+  "File_Exists": {
+    "return": "bool",
+    "documentation": "Check the file path for availability.",
+    "signatures": [
+      ["string - File path"]
+    ]
+  },
+  "File_Length": {
+    "return": "int",
+    "documentation": "Check the file size.",
+    "signatures": [
+      ["string - File path"]
+    ]
+  },
+  "File_Delete": {
+    "return": "bool",
+    "documentation": "Delete the file.",
+    "signatures": [
+      ["string - File path"],
+      ["string[] - File path"]
+    ]
+  },
+  "File_Copy": {
+    "return": "bool",
+    "documentation": "Copy the file.",
+    "signatures": [
+      ["string - Source file", "string - Target directory", "string - Target Filename"],
+      ["string - Source file", "string - Target directory"]
+    ]
+  },
+  "File_CopyImage": {
+    "return": "bool",
+    "documentation": "Copy the saved vision file.",
+    "signatures": [
+      ["string - Source vision file", "string - Target directory", "string - Target Filename", "int - Copy options"],
+      ["string - Source vision file", "string - Target directory", "string - Target Filename"],
+      ["string - Source vision file", "string - Target directory"],
+      ["string - Source vision file", "string - Target directory", "int - Copy options"]
+    ]
+  },
+  "File_GetImage": {
+    "return": "string[]",
+    "documentation": "Get Image from Buffer",
+    "signatures": [
+      ["int - Timout"],
+      ["void - No Parameter"],
+      ["string - Vision Job name", "int - Timout"],
+      ["string - Vision Job name"]
+    ]
+  },
+  "File_Replace": {
+    "return": "bool",
+    "documentation": "Replace and overwrite the string in the file with a specified string.",
+    "signatures": [
+      ["string - File path", "string - String to be replaced", "string - String to replace"]
+    ]
+  },
+  "File_GetToken": {
+    "return": "string",
+    "documentation": "Read the file by the string pattern and retrieve the substring in the string.",
+    "signatures": [
+      ["string - File path", "string - Prefix", "string - Suffix", "int - Number of matches", "int - Remove options"],
+      ["string - File path", "string - Prefix", "string - Suffix", "int - Number of matches"],
+      ["string - File path", "string - Prefix", "string - Suffix"],
+      ["string - File path", "byte[] - Prefix", "byte[] - Suffix", "int - Number of matches", "int - Remove options"],
+      ["string - File path", "byte[] - Prefix", "byte[] - Suffix", "int - Number of matches"],
+      ["string - File path", "byte[] - Prefix", "byte[] - Suffix"]
+    ]
+  },
+  "File_GetAllTokens": {
+    "return": "string[]",
+    "documentation": "Read the file by the string pattern and retrieve all eligible substrings.",
+    "signatures": [
+      ["string - File path", "byte[] - Prefix", "byte[] - Suffix", "int - Remove options"],
+      ["string - File path", "byte[] - Prefix", "byte[] - Suffix"]
+    ]
+  },
+  "File_GetFiles": {
+    "return": "string[]",
+    "documentation": "Retrieve file names in the assigned directory.",
+    "signatures": [
+      ["string - Directory", "string - File name case-insensitive", "int - Retrieving options"],
+      ["string - Directory", "string - File name case-insensitive"],
+      ["string - Directory"]
+    ]
+  },
+  "File_LogWrite": {
+    "return": "bool",
+    "documentation": "Write the log file that messages are available on the view page of the flowchart.",
+    "signatures": [
+      ["string - Device to write", "string - Directory to write", "string - Title", "string - Content"],
+      ["string - Title", "string - Content"],
+      ["string - Content"]
+    ]
+  },
+  "com_open": {
+    "return": "bool",
+    "documentation": "Open a Serial Port device.",
+    "signatures": [
+      ["string - Device Name"]
+    ]
+  },
+  "com_close": {
+    "return": "bool",
+    "documentation": "Close a Serial Port device.",
+    "signatures": [
+      ["string - Device Name"]
+    ]
+  },
+  "com_read": {
+    "return": "byte[]",
+    "documentation": "Read data in the Serial Port received buffer and return an array byte[].",
+    "signatures": [
+      ["string - Device Name"],
+      ["string - Device Name", "int - Elements to read", "int - Timout (ms)"],
+      ["string - Device Name", "int - Elements to read"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix", "int - Remove options", "int - Timout (ms)"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix", "int - Remove options"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix"],
+      ["string - Device Name", "byte[] or string - Suffix", "int - Remove options", "int - Timout (ms)"],
+      ["string - Device Name", "byte[] or string - Suffix", "int - Remove options"],
+      ["string - Device Name", "byte[] or string - Suffix"]
+    ]
+  },
+  "com_read_string": {
+    "return": "string",
+    "documentation": "Read the data in the Serial Port buffer, and convert the data to a UTF8 string.",
+    "signatures": [
+      ["string - Device Name"],
+      ["string - Device Name", "int - Number of characters to read", "int - Timeout (ms)"],
+      ["string - Device Name", "int - Number of characters to read"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix", "int - Remove options", "int - Timeout (ms)"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix", "int - Remove options"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix"],
+      ["string - Device Name", "byte[] or string - Suffix", "int - Remove options", "int - Timeout (ms)"],
+      ["string - Device Name", "byte[] or string - Suffix", "int - Remove options"],
+      ["string - Device Name", "byte[] or string - Suffix"]
+    ]
+  },
+  "com_write": {
+    "return": "bool",
+    "documentation": "Write data to the Serial Port. Numeric values are converted in Little Endian, string values in UTF8.",
+    "signatures": [
+      ["string - Device Name", "? - Value to write", "int - Starting index (for strings/arrays)", "int - Length to write"],
+      ["string - Device Name", "? - Value to write", "int - Starting index (for strings/arrays)"],
+      ["string - Device Name", "? - Value to write"]
+    ]
+  },
+  "com_writeline": {
+    "return": "bool",
+    "documentation": "Write data to the Serial Port and add line break symbols (0x0D 0x0A) at the end automatically.",
+    "signatures": [
+      ["string - Device Name", "? - Value to write", "int - Starting index (for strings/arrays)", "int - Length to write"],
+      ["string - Device Name", "? - Value to write", "int - Starting index (for strings/arrays)"],
+      ["string - Device Name", "? - Value to write"]
+    ]
+  },
+  "socket_open": {
+    "return": "bool",
+    "documentation": "Open a TCP/IP device.",
+    "signatures": [
+      ["string - TCP/IP device name"]
+    ]
+  },
+  "socket_close": {
+    "return": "bool",
+    "documentation": "Close a TCP/IP device.",
+    "signatures": [
+      ["string - TCP/IP device name"]
+    ]
+  },
+  "socket_read": {
+    "return": "byte[]",
+    "documentation": "Read data in the Received Buffer and return in a byte array.",
+    "signatures": [
+      ["string - Device Name"],
+      ["string - Device Name", "int - Number of bytes to read", "int - Timeout (ms)"],
+      ["string - Device Name", "int - Number of bytes to read"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix", "int - Remove options", "int - Timeout (ms)"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix", "int - Remove options"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix"],
+      ["string - Device Name", "byte[] or string - Suffix", "int - Remove options", "int - Timeout (ms)"],
+      ["string - Device Name", "byte[] or string - Suffix", "int - Remove options"],
+      ["string - Device Name", "byte[] or string - Suffix"]
+    ]
+  },
+  "socket_read_string": {
+    "return": "string",
+    "documentation": "Read data in the Received Buffer and convert the byte array to string text in UTF8.",
+    "signatures": [
+      ["string - Device Name"],
+      ["string - Device Name", "int - Number of characters to read", "int - Timeout (ms)"],
+      ["string - Device Name", "int - Number of characters to read"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix", "int - Remove options", "int - Timeout (ms)"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix", "int - Remove options"],
+      ["string - Device Name", "byte[] or string - Prefix", "byte[] or string - Suffix"],
+      ["string - Device Name", "byte[] or string - Suffix", "int - Remove options", "int - Timeout (ms)"],
+      ["string - Device Name", "byte[] or string - Suffix", "int - Remove options"],
+      ["string - Device Name", "byte[] or string - Suffix"]
+    ]
+  },
+  "socket_send": {
+    "return": "int",
+    "documentation": "Send data to a remote device. Returns: 1=success, 0=empty data, -1=socket exception, -2=connection failed, -3=device not found.",
+    "signatures": [
+      ["string - Device Name", "? - Value to send", "int - Starting index (for strings/arrays)", "int - Length to send"],
+      ["string - Device Name", "? - Value to send", "int - Starting index (for strings/arrays)"],
+      ["string - Device Name", "? - Value to send"]
+    ]
+  },
+  "socket_sendline": {
+    "return": "int",
+    "documentation": "Send data and add line break symbols (0x0D 0x0A) to a remote device. Returns: 1=success, 0=empty data, -1=socket exception, -2=connection failed, -3=device not found.",
+    "signatures": [
+      ["string - Device Name", "? - Value to send", "int - Starting index (for strings/arrays)", "int - Length to send"],
+      ["string - Device Name", "? - Value to send", "int - Starting index (for strings/arrays)"],
+      ["string - Device Name", "? - Value to send"]
+    ]
+  },
+  "QueueTag": {
+    "return": "bool",
+    "documentation": "Set robot motions with Queue Tag Numbers to denote the current robot motion in process. The status of each queue tag can be monitored using TMSTA SubCmd 01.",
+    "signatures": [
+      ["int - Tag number", "int - Wait for the tagging to continue processing or not"],
+      ["int - Tag number"]
+    ]
+  },
+  "WaitQueueTag": {
+    "return": ["int","int","void"],
+    "documentation": "Wait for the Queue Tag Number of the robot motion to complete.",
+    "signatures": [
+      ["int - Tag number", "int - Time to timeout"],
+      ["int - Tag number"],
+      ["void - No Parameter"]
+    ]
+  },
+  "CheckQueueTag": {
+    "return": "int",
+    "documentation": "Check the Queue Tag Number of the robot motion to complete.",
+    "signatures": [
+      ["int - Tag number"]
+    ]
+  },
+  "StopAndClearBuffer": {
+    "return": "bool",
+    "documentation": "Stop the motion of the robot and clear existing commands of the robot in the buffer.",
+    "signatures": [
+      ["void - No Parameter"]
+    ]
+  },
+  "ChangeBase": {
+    "return": "bool",
+    "documentation": "Set the reference base for the consecutive motion.",
+    "signatures": [
+      ["string - Base name", "int - Base index"],
+      ["string - Base name"],
+      ["float[] - Base Parameters"]
+    ]
+  },
+  "ChangeTCP": {
+    "return": "bool",
+    "documentation": "Set the end tool parameters for the consecutive motion.",
+    "signatures": [
+      ["string - TCP name"],
+      ["float[] - TCP Parameters"],
+      ["float[] - TCP Parameters", "float - TCP Mass"],
+      ["float[] - TCP Parameters", "float - TCP Mass", "float[] - TCP rotation inertia includes nine values"]
+    ]
+  },
+  "ChangeLoad": {
+    "return": "bool",
+    "documentation": "Set the load weight to compensate.",
+    "signatures": [
+      ["float - Load weight in kilograms"],
+      ["float - Load weight in kilograms", "float - Weight Conversion Estimated Distance in millimeters"],
+      ["string - Name of the sensor", "int - Sensing condition (0=picking, 1=releasing)", "float - Weight Conversion Estimated Distance in millimeters"]
+    ]
+  },
+  "PTP": {
+    "return": "bool",
+    "documentation": "Define and send PTP motion command into buffer for execution. Data format combines three letters: #1 Motion target (C=Cartesian, J=Joint), #2 Speed format (P=percentage), #3 Blending format (P=percentage).",
+    "signatures": [
+      ["string - Data format", "float[] - Motion target", "int - Speed (%)", "int - Time to top speed (ms)", "int - Blending value (%)", "bool - Disable precise positioning"],
+      ["string - Data format", "float[] - Motion target", "int - Speed (%)", "int - Time to top speed (ms)", "int - Blending value (%)", "bool - Disable precise positioning", "int[] - Pose configuration [Config1, Config2, Config3]"],
+      ["string - Data format", "float[] - Motion target", "int - Speed (%)", "int - Time to top speed (ms)", "int - Blending value (%)", "bool - Disable precise positioning", "float[] - Reference joint angles"]
+    ]
+  },
+  "Move_PTP": {
+    "return": "bool",
+    "documentation": "Define and send PTP relative motion commands for execution. Data format: #1 Relative target (C=current base, T=tool, J=joint), #2 Speed (P=percentage), #3 Blending (P=percentage).",
+    "signatures": [
+      ["string - Data format", "float[] - Relative motion parameters", "int - Speed (%)", "int - Time to top speed (ms)", "int - Blending value (%)", "bool - Disable precise positioning"]
+    ]
+  },
+  "Line": {
+    "return": "bool",
+    "documentation": "Define and send Line motion command into buffer for execution. Data format: #1 Target (C=Cartesian), #2 Speed (P=percentage, A=absolute sync, D=absolute no sync), #3 Blending (P=percentage, R=radius).",
+    "signatures": [
+      ["string - Data format", "float[] - Motion target", "int - Speed (%/mm/s)", "int - Time to top speed (ms)", "int - Blending value (%/mm)", "bool - Disable precise positioning"],
+      ["string - Data format", "float[] - Motion target", "int - Speed (%/mm/s)", "int - Time to top speed (ms)", "int - Blending value (%/mm)", "bool - Disable precise positioning", "int - Singularity handling (0=disable, 1=path avoidance, 2=speed change)"]
+    ]
+  },
+  "Move_Line": {
+    "return": "bool",
+    "documentation": "Define and send Line relative motion commands for execution. Data format: #1 Relative target (C=current base, T=tool), #2 Speed (P/A/D), #3 Blending (P/R).",
+    "signatures": [
+      ["string - Data format", "float[] - Relative motion parameters", "int - Speed (%/mm/s)", "int - Time to top speed (ms)", "int - Blending value (%/mm)", "bool - Disable precise positioning"],
+      ["string - Data format", "float[] - Relative motion parameters", "int - Speed (%/mm/s)", "int - Time to top speed (ms)", "int - Blending value (%/mm)", "bool - Disable precise positioning", "int - Singularity handling (0=disable, 1=path avoidance, 2=speed change)"]
+    ]
+  },
+  "Circle": {
+    "return": "bool",
+    "documentation": "Define and send Circle motion command into buffer for execution. Data format: #1 Target (C=Cartesian), #2 Speed (P/A/D), #3 Blending (P=percentage).",
+    "signatures": [
+      ["string - Data format", "float[] - Point on arc", "float[] - End point of arc", "int - Speed (%/mm/s)", "int - Time to top speed (ms)", "int - Blending value (%)", "int - Arc angle (degrees)", "bool - Disable precise positioning"],
+      ["string - Data format", "float[] - Point on arc", "float[] - End point of arc", "int - Speed (%/mm/s)", "int - Time to top speed (ms)", "int - Blending value (%)", "int - Arc angle (degrees)", "int - Rotation (0=linear interpolation, 1=keep rotation)", "bool - Disable precise positioning"]
+    ]
+  },
+  "PLine": {
+    "return": "bool",
+    "documentation": "Define and send PLine motion command into buffer for execution. Data format: #1 Target (J=joint, C=Cartesian), #2 Speed (A/D), #3 Blending (P=percentage).",
+    "signatures": [
+      ["string - Data format", "float[] - Motion target", "int - Speed (mm/s)", "int - Time to top speed (ms)", "int - Blending value (%)"]
+    ]
+  },
+  "Move_PLine": {
+    "return": "bool",
+    "documentation": "Define and send PLine relative motion commands for execution. Data format: #1 Relative target, #2 Speed (A/D), #3 Blending (P=percentage).",
+    "signatures": [
+      ["string - Data format", "float[] - Relative motion parameters", "int - Speed (mm/s)", "int - Time to top speed (ms)", "int - Blending value (%)"]
+    ]
+  },
+  "LineSingularity": {
+    "return": "bool",
+    "documentation": "Set the line motion control with singularity handling or not. When the project is running, it defaults to 0 to disable.",
+    "signatures": [
+      ["int - Singularity handling (0=disable, 1=path avoidance, 2=speed change for TM25S/TM30S)"]
+    ]
+  },
+  "CollisionCheck": {
+    "return": "string",
+    "documentation": "Pre-collision checks help prevent robots from interfering with self-testing and avoid collisions. Returns empty string if no collision, or the collision location if detected.",
+    "signatures": [
+      ["float - Safety distance (mm)", "string - Subflow name (Flow projects only)"],
+      ["float - Safety distance (mm)", "? - Target motion statement or function"]
+    ]
+  },
+  "PVTEnter": {
+    "return": "bool",
+    "documentation": "Set PVT mode to start with Joint/Cartesian command. Before switching to PVT mode, it waits for other robot motion instructions to complete.",
+    "signatures": [
+      ["int - PVT Mode (0=Joint, 1=Cartesian)"],
+      ["void - No parameter (defaults to Joint)"]
+    ]
+  },
+  "PVTExit": {
+    "return": "bool",
+    "documentation": "Set PVT mode motion to exit. After exiting PVT mode, it waits for PVT function motion instructions to complete.",
+    "signatures": [
+      ["void - No parameter"]
+    ]
+  },
+  "PVTPoint": {
+    "return": "bool",
+    "documentation": "Set the PVT mode parameters of motion in position, velocity, and duration.",
+    "signatures": [
+      ["float[] - Target position", "float[] - Target velocity", "float - Duration (seconds, >= 0.01)", "bool - Synchronize to project speed"],
+      ["float[] - Target position", "float[] - Target velocity", "float - Duration (seconds)"],
+      ["float - P1", "float - P2", "float - P3", "float - P4", "float - P5", "float - P6", "float - V1", "float - V2", "float - V3", "float - V4", "float - V5", "float - V6", "float - Duration", "bool - Sync to project speed"],
+      ["float - P1", "float - P2", "float - P3", "float - P4", "float - P5", "float - P6", "float - V1", "float - V2", "float - V3", "float - V4", "float - V5", "float - V6", "float - Duration"]
+    ]
+  },
+  "PVTPause": {
+    "return": "bool",
+    "documentation": "Set PVT mode motion to pause.",
+    "signatures": [
+      ["void - No parameter"]
+    ]
+  },
+  "PVTResume": {
+    "return": "bool",
+    "documentation": "Set PVT mode motion to resume.",
+    "signatures": [
+      ["void - No parameter"]
+    ]
+  },
+  "PathOffset_Set": {
+    "return": "bool",
+    "documentation": "Set Path Offset parameters. Offset reference base: 0=robot base, 1=tool (default), 2=current base, 3=trajectory.",
+    "signatures": [
+      ["bool - Enable Path Offset", "float[] - Offset values {X,Y,Z,RX,RY,RZ}", "int - Offset reference base", "float - Alpha filter coefficient (0-1)"],
+      ["bool - Enable Path Offset", "float[] - Offset values", "int - Offset reference base"],
+      ["bool - Enable Path Offset", "float[] - Offset values"],
+      ["bool - Enable Path Offset", "float - Alpha filter coefficient"],
+      ["bool - Enable Path Offset"],
+      ["float[] - Offset values", "int - Offset reference base"],
+      ["float[] - Offset values"]
+    ]
+  },
+  "PathOffset_Get": {
+    "return": "float[]",
+    "documentation": "Get the Path Offset values. Returns offset values {X,Y,Z,RX,RY,RZ}.",
+    "signatures": [
+      ["int - Get mode (0=by robot base, 1=by offset reference base)"],
+      ["void - No parameter (defaults to offset reference base)"]
+    ]
+  },
+  "PathOffset_IsEnabled": {
+    "return": "bool",
+    "documentation": "Check if the Path Offset is enabled.",
+    "signatures": [
+      ["void - No parameter"]
+    ]
+  },
+  "PathOffset_AlphaFilter": {
+    "return": "bool",
+    "documentation": "Set the Alpha Filter coefficient to avoid over-acceleration. Value ranges from 0 to 1. Lower values mean slower offset compensation speed.",
+    "signatures": [
+      ["float - Alpha filter coefficient (0-1)"]
+    ]
+  },
+  "PathOffset_MaxOffset": {
+    "return": "bool",
+    "documentation": "Set the upper bounds of the distance and the rotation for Path Offset.",
+    "signatures": [
+      ["float - Distance upper bound (mm)", "float - Rotation upper bound (degrees)"]
+    ]
+  },
+  "Velocity": {
+    "return": "bool",
+    "documentation": "Define and activate continuous speed control mode. Control modes: C=linear speed w.r.t. current base, T=linear speed w.r.t. tool base, J=angular speed with joint angles.",
+    "signatures": [
+      ["bool - Enable/disable", "string - Control mode", "int - Time to top speed (150-2000 ms)", "int - Control value protection time (ms)"],
+      ["bool - Enable/disable", "string - Control mode", "int - Time to top speed (ms)"],
+      ["bool - Enable/disable", "string - Control mode"],
+      ["bool - Disable only"],
+      ["float[] - Speed control values"],
+      ["float - V1", "float - V2", "float - V3", "float - V4", "float - V5", "float - V6"]
+    ]
+  },
+  "Position": {
+    "return": "bool",
+    "documentation": "Define and activate continuous position control mode. Control modes: C=target coordinate w.r.t. current base, T=target coordinate w.r.t. tool base, J=target angle with joint angle.",
+    "signatures": [
+      ["bool - Enable/disable", "string - Control mode", "int - Time to top speed (150-2000 ms)", "float - Motion Control Gain (1-100)", "int - Expected control value protection time (ms)"],
+      ["bool - Enable/disable", "string - Control mode", "int - Time to top speed (ms)", "float - Motion Control Gain"],
+      ["bool - Enable/disable", "string - Control mode"],
+      ["bool - Disable only"],
+      ["float[] - Position control values"],
+      ["float - P1", "float - P2", "float - P3", "float - P4", "float - P5", "float - P6"]
+    ]
+  },
+  "SetTCPSpeedLimit": {
+    "return": "bool",
+    "documentation": "Set Linear Speed Limit and Rotation Speed Limit for Line Motion.",
+    "signatures": [
+      ["bool - Enable speed limit", "int - Linear speed limit (mm/s)", "int - Rotation speed limit (deg/s)"],
+      ["int - Linear speed limit (mm/s)", "int - Rotation speed limit (deg/s)"],
+      ["bool - Enable speed limit"]
+    ]
+  },
+  "SetAccTable": {
+    "return": "bool",
+    "documentation": "Set the acceleration table. The system will automatically fetch speed and time to top speed from the table by distance. Available for TM Robot S series models.",
+    "signatures": [
+      ["void - Reset to defaults"],
+      ["int - Table group (1-5)", "float - Distance Max (mm)", "float - Speed 1 (%)", "float - Speed 2 (%)", "float - Time to top speed 2 (ms)"],
+      ["int - Table group (1-5)", "float - Distance Max (mm)", "float - Speed 1 (%)", "float - Speed 2 (%)"],
+      ["int - Table group (1-5)", "float - Distance Max (mm)", "float - Speed 2 (%)"],
+      ["int - Table group (2-4)", "bool - Enable/disable group"]
+    ]
+  },
+  "GetAccTable": {
+    "return": "float[]",
+    "documentation": "Retrieve the contents of the acceleration table. Returns array of 6 values: Distance Min, Distance Max, Speed 1, Speed 2, Time to Top Speed 1, Time to Top Speed 2. Available for TM Robot S series models.",
+    "signatures": [
+      ["int - Table group (1-5)"]
+    ]
+  },
+  "Vision_DoJob": {
+    "return": "bool",
+    "documentation": "Execute the existing vision jobs in the project but not the ones with vision capture points. Returns true if vision job completed and result is pass.",
+    "signatures": [
+      ["string - Vision job name"]
+    ]
+  },
+  "Vision_DoJob_PTP": {
+    "return": "bool",
+    "documentation": "Execute the existing vision jobs in the project, move to the vision capture point by PTP motion, and queue with motion commands.",
+    "signatures": [
+      ["string - Vision job name", "int - Speed (%)", "int - Time to top speed (ms)", "bool - Use smart pose selection"],
+      ["string - Vision job name", "int - Speed (%)", "int - Time to top speed (ms)"]
+    ]
+  },
+  "Vision_DoJob_Line": {
+    "return": "bool",
+    "documentation": "Execute the existing vision jobs in the project, move to the initial position by line motion, and queue with motion commands.",
+    "signatures": [
+      ["string - Vision job name", "int - Speed (%)"],
+      ["string - Vision job name", "int - Speed (mm/s)", "int - Time to top speed (ms)", "bool - Link to project speed"],
+      ["string - Vision job name", "int - Speed (mm/s)", "int - Time to top speed (ms)"]
+    ]
+  },
+  "Vision_IsJobAvailable": {
+    "return": "bool",
+    "documentation": "Check if the vision job in the current project is present and valid.",
+    "signatures": [
+      ["string - Vision job name"]
+    ]
+  },
+  "Vision_GetOutputArraySize": {
+    "return": "int",
+    "documentation": "Retrieve the array size of the 2D output variables after vision job execution.",
+    "signatures": [
+      ["string - Output variable name"],
+      ["string - Output variable name", "int - Object index (row)"],
+      ["string - Output variable name", "int|string - Flying job index or point name"],
+      ["string - Output variable name", "int|string - Flying job index or point name", "int - Object index (row)"]
+    ]
+  },
+  "Vision_GetOutputArrayValue": {
+    "return": "?",
+    "documentation": "Retrieve the array values of the 2D output variables after vision job execution.",
+    "signatures": [
+      ["string - Output variable name", "int - Object index (row)"],
+      ["string - Output variable name", "int - Object index (row)", "int - Column index"],
+      ["string - Output variable name", "int|string - Flying job index or point name"],
+      ["string - Output variable name", "int|string - Flying job index or point name", "int - Index"],
+      ["string - Output variable name", "int|string - Flying job index or point name", "int - Object index (row)", "int - Column index"]
+    ]
+  },
+  "Vision_GetTriggerJobOutputCount": {
+    "return": "int",
+    "documentation": "Retrieve the output variable count in the buffer after vision IO Trigger Job execution.",
+    "signatures": [
+      ["string - Output variable name"]
+    ]
+  },
+  "Vision_GetTriggerJobOutputValue": {
+    "return": "string[]",
+    "documentation": "Retrieve and remove output variable values from the buffer after vision IO Trigger Job execution (FIFO).",
+    "signatures": [
+      ["string - Output variable name"]
+    ]
+  },
+  "ScriptListen": {
+    "return": "bool",
+    "documentation": "Enter external script control mode. Returns true on ScriptExit() or project stop; false on timeout or TCP Listener failure.",
+    "signatures": [
+      ["string - Message to send", "bool - Show in notice window", "int - Connection timeout (ms)", "int - Data timeout (ms)"],
+      ["string - Message to send", "bool - Show in notice window"],
+      ["string - Message to send"]
+    ]
+  },
+  "ScriptExit": {
+    "return": "bool",
+    "documentation": "Exit external script control mode and wait for commands to finish before leaving Listen node.",
+    "signatures": [
+      ["void - No parameter"]
+    ]
+  },
+  "modbus_open": {
+    "return": "bool",
+    "documentation": "Open the connection to the Modbus TCP/RTU device.",
+    "signatures": [
+      ["string - TCP/RTU device name"]
+    ]
+  },
+  "modbus_close": {
+    "return": "bool",
+    "documentation": "Close the connection from the Modbus TCP/RTU device.",
+    "signatures": [
+      ["string - TCP/RTU device name"]
+    ]
+  },
+  "modbus_read": {
+    "return": "?",
+    "documentation": "Modbus TCP/RTU read function. Returns data type based on predefined parameters.",
+    "signatures": [
+      ["string - TCP/RTU device name", "string - Predefined parameter name"],
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length"]
+    ]
+  },
+  "modbus_read_int16": {
+    "return": "int[]",
+    "documentation": "Modbus TCP/RTU read, transform address data to int16 array.",
+    "signatures": [
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length", "int - Endian (0=Little, 1=Big)"],
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length"]
+    ]
+  },
+  "modbus_read_int32": {
+    "return": "int[]",
+    "documentation": "Modbus TCP/RTU read, transform address data to int32 array.",
+    "signatures": [
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length", "int - Endian (0=Little, 1=Big)"],
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length"]
+    ]
+  },
+  "modbus_read_float": {
+    "return": "float[]",
+    "documentation": "Modbus TCP/RTU read, transform address data to float array.",
+    "signatures": [
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length", "int - Endian (0=Little, 1=Big)"],
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length"]
+    ]
+  },
+  "modbus_read_double": {
+    "return": "double[]",
+    "documentation": "Modbus TCP/RTU read, transform address data to double array.",
+    "signatures": [
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length", "int - Endian (0=Little, 1=Big)"],
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length"]
+    ]
+  },
+  "modbus_read_string": {
+    "return": "string",
+    "documentation": "Modbus TCP/RTU read, convert address data to UTF8 string.",
+    "signatures": [
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length", "int - Endian (0=Little, 1=Big)"],
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Read type (DO/DI/RO/RI)", "int - Starting address", "int - Data length"]
+    ]
+  },
+  "modbus_write": {
+    "return": "bool",
+    "documentation": "Modbus TCP/RTU write function. Returns true on success, false if empty data or communication error.",
+    "signatures": [
+      ["string - TCP/RTU device name", "string - Predefined parameter name", "? - Value to write", "int - Max addresses to write"],
+      ["string - TCP/RTU device name", "string - Predefined parameter name", "? - Value to write"],
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Write type (DO/RO)", "int - Starting address", "? - Value to write", "int - Max addresses to write"],
+      ["string - TCP/RTU device name", "byte - Slave ID", "string - Write type (DO/RO)", "int - Starting address", "? - Value to write"]
+    ]
+  },
+  "svr_read": {
+    "return": "?",
+    "documentation": "Read the item value in the communication data table of Ethernet Slave in the Connection Tab of Robot Setting at the local host. Returns value by set data type.",
+    "signatures": [
+      ["string - Item name"]
+    ]
+  },
+  "svr_write": {
+    "return": "bool",
+    "documentation": "Write the item value into the communication data table of Ethernet Slave. Returns false if item name does not exist, item is read-only, or value type mismatches.",
+    "signatures": [
+      ["string - Item name", "? - Item value"]
+    ]
+  },
+  "profinet_read_input": {
+    "return": ["byte[]", "byte", "?", "?", "?"],
+    "documentation": "Read the Profinet input table content. Returns data based on address or item definition in the communication data table.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"],
+      ["string - Item name", "int - Starting shifted address", "int - Amount of addresses to read"],
+      ["string - Item name", "int - Starting shifted address"],
+      ["string - Item name"]
+    ]
+  },
+  "profinet_read_input_int": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the Profinet input table content and convert data to 32-bit integer. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "profinet_read_input_float": {
+    "return": ["float[]", "float[]", "float"],
+    "documentation": "Read the Profinet input table content and convert data to 32-bit floating-point. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "profinet_read_input_string": {
+    "return": "string",
+    "documentation": "Read the Profinet input table content and convert data to UTF8 string (ending with 0x00 encountered).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"]
+    ]
+  },
+  "profinet_read_input_bit": {
+    "return": ["byte", "byte", "byte[]", "byte[]"],
+    "documentation": "Read the Profinet input table content and retrieve the nth bit value. Returns 1 for bit==1, 0 for bit==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value"],
+      ["string - Item name", "int - Nth bit value"],
+      ["int - Starting address", "int - Starting bit", "int - Amount of bits to read"],
+      ["string - Item name", "int - Starting bit", "int - Amount of bits to read"]
+    ]
+  },
+  "profinet_read_output": {
+    "return": ["byte[]", "byte", "?", "?", "?"],
+    "documentation": "Read the Profinet output table content. Returns data based on address or item definition in the communication data table.",
+    "signatures": [
+      ["int - Starting address", "int - Address length to read"],
+      ["int - Starting address"],
+      ["string - Item name", "int - Starting shifted address", "int - Amount of addresses to read"],
+      ["string - Item name", "int - Starting shifted address"],
+      ["string - Item name"]
+    ]
+  },
+  "profinet_read_output_int": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the Profinet output table content and convert data to 32-bit integer. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "profinet_read_output_float": {
+    "return": ["float[]", "float[]", "float"],
+    "documentation": "Read the Profinet output table content and convert data to 32-bit floating-point. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "profinet_read_output_string": {
+    "return": "string",
+    "documentation": "Read the Profinet output table content and convert data to UTF8 string (ending with 0x00 encountered).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"]
+    ]
+  },
+  "profinet_read_output_bit": {
+    "return": ["byte", "byte", "byte[]", "byte[]"],
+    "documentation": "Read the Profinet output table content and retrieve the nth bit value. Returns 1 for bit==1, 0 for bit==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value"],
+      ["string - Item name", "int - Nth bit value"],
+      ["int - Starting address", "int - Starting bit", "int - Amount of bits to read"],
+      ["string - Item name", "int - Starting bit", "int - Amount of bits to read"]
+    ]
+  },
+  "profinet_write_output": {
+    "return": "bool",
+    "documentation": "Write data to the Profinet output table. Available data types: byte, byte[], int, int[], float, float[], string. Returns false if empty data or communication error.",
+    "signatures": [
+      ["int - Starting address", "? - Data to write", "int - Max address amount to write"],
+      ["int - Starting address", "? - Data to write"],
+      ["int - Starting address", "? - Data to write", "int - Starting address of data", "int - Amount of addresses to write"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write", "int - Starting address of data", "int - Amount of addresses to write"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write", "int - Starting address of data"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write"],
+      ["string - Item name", "? - Data to write"]
+    ]
+  },
+  "profinet_write_output_bit": {
+    "return": "bool",
+    "documentation": "Write content to the nth bit value of the data byte in the Profinet output table. Bit value=1 for byte>=1, bit value=0 for byte==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value", "int - Data to write"],
+      ["string - Item name", "int - Nth bit value", "int - Data to write"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data", "int - Amount of bits to write"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data", "int - Amount of bits to write"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write"]
+    ]
+  },
+  "eip_read_input": {
+    "return": ["byte[]", "byte", "?", "?", "?"],
+    "documentation": "Read the EtherNet/IP input table content. Returns data based on address or item definition in the communication data table.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"],
+      ["string - Item name", "int - Starting shifted address", "int - Amount of addresses to read"],
+      ["string - Item name", "int - Starting shifted address"],
+      ["string - Item name"]
+    ]
+  },
+  "eip_read_input_int": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the EtherNet/IP input table content and convert data to 32-bit integer. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "eip_read_input_float": {
+    "return": ["float[]", "float[]", "float"],
+    "documentation": "Read the EtherNet/IP input table content and convert data to 32-bit floating-point. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "eip_read_input_string": {
+    "return": "string",
+    "documentation": "Read the EtherNet/IP input table content and convert data to UTF8 string (ending with 0x00 encountered).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"]
+    ]
+  },
+  "eip_read_input_bit": {
+    "return": ["byte", "byte", "byte[]", "byte[]"],
+    "documentation": "Read the EtherNet/IP input table content and retrieve the nth bit value. Returns 1 for bit==1, 0 for bit==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value"],
+      ["string - Item name", "int - Nth bit value"],
+      ["int - Starting address", "int - Starting bit", "int - Amount of bits to read"],
+      ["string - Item name", "int - Starting bit", "int - Amount of bits to read"]
+    ]
+  },
+  "eip_read_output": {
+    "return": ["byte[]", "byte", "?", "?", "?"],
+    "documentation": "Read the EtherNet/IP output table content. Returns data based on address or item definition in the communication data table.",
+    "signatures": [
+      ["int - Starting address", "int - Address length to read"],
+      ["int - Starting address"],
+      ["string - Item name", "int - Starting shifted address", "int - Amount of addresses to read"],
+      ["string - Item name", "int - Starting shifted address"],
+      ["string - Item name"]
+    ]
+  },
+  "eip_read_output_int": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the EtherNet/IP output table content and convert data to 32-bit integer. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "eip_read_output_float": {
+    "return": ["float[]", "float[]", "float"],
+    "documentation": "Read the EtherNet/IP output table content and convert data to 32-bit floating-point. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "eip_read_output_string": {
+    "return": "string",
+    "documentation": "Read the EtherNet/IP output table content and convert data to UTF8 string (ending with 0x00 encountered).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"]
+    ]
+  },
+  "eip_read_output_bit": {
+    "return": ["byte", "byte", "byte[]", "byte[]"],
+    "documentation": "Read the EtherNet/IP output table content and retrieve the nth bit value. Returns 1 for bit==1, 0 for bit==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value"],
+      ["string - Item name", "int - Nth bit value"],
+      ["int - Starting address", "int - Starting bit", "int - Amount of bits to read"],
+      ["string - Item name", "int - Starting bit", "int - Amount of bits to read"]
+    ]
+  },
+  "eip_write_output": {
+    "return": "bool",
+    "documentation": "Write data to the EtherNet/IP output table. Available data types: byte, byte[], int, int[], float, float[], string. Returns false if empty data or communication error.",
+    "signatures": [
+      ["int - Starting address", "? - Data to write", "int - Max address amount to write"],
+      ["int - Starting address", "? - Data to write"],
+      ["int - Starting address", "? - Data to write", "int - Starting address of data", "int - Amount of addresses to write"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write", "int - Starting address of data", "int - Amount of addresses to write"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write", "int - Starting address of data"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write"],
+      ["string - Item name", "? - Data to write"]
+    ]
+  },
+  "eip_write_output_bit": {
+    "return": "bool",
+    "documentation": "Write content to the nth bit value of the data byte in the EtherNet/IP output table. Bit value=1 for byte>=1, bit value=0 for byte==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value", "int - Data to write"],
+      ["string - Item name", "int - Nth bit value", "int - Data to write"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data", "int - Amount of bits to write"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data", "int - Amount of bits to write"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write"]
+    ]
+  },
+  "ethercat_read_input": {
+    "return": ["byte[]", "byte", "?", "?", "?"],
+    "documentation": "Read the EtherCAT input table content. Returns data based on address or item definition in the communication data table.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"],
+      ["string - Item name", "int - Starting shifted address", "int - Amount of addresses to read"],
+      ["string - Item name", "int - Starting shifted address"],
+      ["string - Item name"]
+    ]
+  },
+  "ethercat_read_input_int": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the EtherCAT input table content and convert data to 32-bit integer. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "ethercat_read_input_float": {
+    "return": ["float[]", "float[]", "float"],
+    "documentation": "Read the EtherCAT input table content and convert data to 32-bit floating-point. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "ethercat_read_input_string": {
+    "return": "string",
+    "documentation": "Read the EtherCAT input table content and convert data to UTF8 string (ending with 0x00 encountered).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"]
+    ]
+  },
+  "ethercat_read_input_bit": {
+    "return": ["byte", "byte", "byte[]", "byte[]"],
+    "documentation": "Read the EtherCAT input table content and retrieve the nth bit value. Returns 1 for bit==1, 0 for bit==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value"],
+      ["string - Item name", "int - Nth bit value"],
+      ["int - Starting address", "int - Starting bit", "int - Amount of bits to read"],
+      ["string - Item name", "int - Starting bit", "int - Amount of bits to read"]
+    ]
+  },
+  "ethercat_read_output": {
+    "return": ["byte[]", "byte", "?", "?", "?"],
+    "documentation": "Read the EtherCAT output table content. Returns data based on address or item definition in the communication data table.",
+    "signatures": [
+      ["int - Starting address", "int - Address length to read"],
+      ["int - Starting address"],
+      ["string - Item name", "int - Starting shifted address", "int - Amount of addresses to read"],
+      ["string - Item name", "int - Starting shifted address"],
+      ["string - Item name"]
+    ]
+  },
+  "ethercat_read_output_int": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the EtherCAT output table content and convert data to 32-bit integer. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "ethercat_read_output_float": {
+    "return": ["float[]", "float[]", "float"],
+    "documentation": "Read the EtherCAT output table content and convert data to 32-bit floating-point. Endian: 0=Little, 1=Big, 2=Config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian (0=Little, 1=Big, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "ethercat_read_output_string": {
+    "return": "string",
+    "documentation": "Read the EtherCAT output table content and convert data to UTF8 string (ending with 0x00 encountered).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"]
+    ]
+  },
+  "ethercat_read_output_bit": {
+    "return": ["byte", "byte", "byte[]", "byte[]"],
+    "documentation": "Read the EtherCAT output table content and retrieve the nth bit value. Returns 1 for bit==1, 0 for bit==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value"],
+      ["string - Item name", "int - Nth bit value"],
+      ["int - Starting address", "int - Starting bit", "int - Amount of bits to read"],
+      ["string - Item name", "int - Starting bit", "int - Amount of bits to read"]
+    ]
+  },
+  "ethercat_write_output": {
+    "return": "bool",
+    "documentation": "Write data to the EtherCAT output table. Available data types: byte, byte[], int, int[], float, float[], string. Returns false if empty data or communication error.",
+    "signatures": [
+      ["int - Starting address", "? - Data to write", "int - Max address amount to write"],
+      ["int - Starting address", "? - Data to write"],
+      ["int - Starting address", "? - Data to write", "int - Starting address of data", "int - Amount of addresses to write"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write", "int - Starting address of data", "int - Amount of addresses to write"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write", "int - Starting address of data"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write"],
+      ["string - Item name", "? - Data to write"]
+    ]
+  },
+  "ethercat_write_output_bit": {
+    "return": "bool",
+    "documentation": "Write content to the nth bit value of the data byte in the EtherCAT output table. Bit value=1 for byte>=1, bit value=0 for byte==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value", "int - Data to write"],
+      ["string - Item name", "int - Nth bit value", "int - Data to write"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data", "int - Amount of bits to write"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data", "int - Amount of bits to write"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write"]
+    ]
+  },
+  "cclink_read_input": {
+    "return": ["byte[]", "byte", "?", "?", "?"],
+    "documentation": "Read the CC-Link input table content. Return type depends on item definition (byte, byte[], int, int[], float, float[], string).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"],
+      ["string - Item name", "int - Starting shifted address", "int - Amount of addresses to read"],
+      ["string - Item name", "int - Starting shifted address"],
+      ["string - Item name"]
+    ]
+  },
+  "cclink_read_input_int16": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the CC-Link input table content and convert data to 16-bit integer. Conversion: 0=Little-Endian, 1=Big-Endian, 2=Based on config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian conversion (0=LE, 1=BE, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "cclink_read_input_int": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the CC-Link input table content and convert data to 32-bit integer. Conversion: 0=Little-Endian, 1=Big-Endian, 2=Based on config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian conversion (0=LE, 1=BE, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "cclink_read_input_float": {
+    "return": ["float[]", "float[]", "float"],
+    "documentation": "Read the CC-Link input table content and convert data to 32-bit floating-point. Conversion: 0=Little-Endian, 1=Big-Endian, 2=Based on config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian conversion (0=LE, 1=BE, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "cclink_read_input_string": {
+    "return": "string",
+    "documentation": "Read the CC-Link input table content and convert data to UTF8 string (ending with 0x00).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"]
+    ]
+  },
+  "cclink_read_input_bit": {
+    "return": ["byte", "byte", "byte[]", "byte[]"],
+    "documentation": "Read the CC-Link input table content and retrieve the nth bit value. Returns 1 for bit=1, 0 for bit=0. Bit data returned as byte array.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value"],
+      ["string - Item name", "int - Nth bit value"],
+      ["int - Starting address", "int - Starting bit", "int - Amount of bits to read"],
+      ["string - Item name", "int - Starting bit", "int - Amount of bits to read"]
+    ]
+  },
+  "cclink_read_output": {
+    "return": ["byte[]", "byte", "?", "?", "?"],
+    "documentation": "Read the CC-Link output table content. Return type depends on item definition (byte, byte[], int, int[], float, float[], string).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"],
+      ["string - Item name", "int - Starting shifted address", "int - Amount of addresses to read"],
+      ["string - Item name", "int - Starting shifted address"],
+      ["string - Item name"]
+    ]
+  },
+  "cclink_read_output_int16": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the CC-Link output table content and convert data to 16-bit integer. Conversion: 0=Little-Endian, 1=Big-Endian, 2=Based on config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian conversion (0=LE, 1=BE, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "cclink_read_output_int": {
+    "return": ["int[]", "int[]", "int"],
+    "documentation": "Read the CC-Link output table content and convert data to 32-bit integer. Conversion: 0=Little-Endian, 1=Big-Endian, 2=Based on config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian conversion (0=LE, 1=BE, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "cclink_read_output_float": {
+    "return": ["float[]", "float[]", "float"],
+    "documentation": "Read the CC-Link output table content and convert data to 32-bit floating-point. Conversion: 0=Little-Endian, 1=Big-Endian, 2=Based on config file.",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read", "int - Endian conversion (0=LE, 1=BE, 2=Config)"],
+      ["int - Starting address", "int - Address amount to read"],
+      ["int - Starting address"]
+    ]
+  },
+  "cclink_read_output_string": {
+    "return": "string",
+    "documentation": "Read the CC-Link output table content and convert data to UTF8 string (ending with 0x00).",
+    "signatures": [
+      ["int - Starting address", "int - Address amount to read"]
+    ]
+  },
+  "cclink_read_output_bit": {
+    "return": ["byte", "byte", "byte[]", "byte[]"],
+    "documentation": "Read the CC-Link output table content and retrieve the nth bit value. Returns 1 for bit=1, 0 for bit=0. Bit data returned as byte array.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value"],
+      ["string - Item name", "int - Nth bit value"],
+      ["int - Starting address", "int - Starting bit", "int - Amount of bits to read"],
+      ["string - Item name", "int - Starting bit", "int - Amount of bits to read"]
+    ]
+  },
+  "cclink_write_output": {
+    "return": "bool",
+    "documentation": "Write data to the CC-Link output table. Available data types: byte, byte[], int, int[], float, float[], string. Returns true on success, false if data is empty or send/receive fails.",
+    "signatures": [
+      ["int - Starting address", "? - Data to write", "int - Max address amount to write"],
+      ["int - Starting address", "? - Data to write"],
+      ["int - Starting address", "? - Data to write", "int - Starting address of data", "int - Amount of addresses to write"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write", "int - Starting address of data", "int - Amount to write"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write", "int - Starting address of data"],
+      ["string - Item name", "int - Starting shifted address", "? - Data to write"],
+      ["string - Item name", "? - Data to write"]
+    ]
+  },
+  "cclink_write_output_bit": {
+    "return": "bool",
+    "documentation": "Write content to the nth bit value of the data byte in the CC-Link output table. Bit value=1 for byte>=1, bit value=0 for byte==0.",
+    "signatures": [
+      ["int - Starting address", "int - Nth bit value", "int - Data to write"],
+      ["string - Item name", "int - Nth bit value", "int - Data to write"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data", "int - Amount of bits to write"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data"],
+      ["int - Starting address", "int - Starting bit", "byte[] - Data to write"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data", "int - Amount of bits to write"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write", "int - Starting bit to write data"],
+      ["string - Item name", "int - Starting bit", "byte[] - Data to write"]
     ]
   }
 }

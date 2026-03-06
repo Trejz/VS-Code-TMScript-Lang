@@ -1,65 +1,96 @@
-# techman README
+# TMscript Language Support for VS Code
 
-This is the README for your extension "techman". After writing up a brief description, we recommend including the following sections.
+Language support for **Techman Robot Script (TMscript)**. This extension is primarily designed for use with the **Script Node** in TMflow projects, rather than full standalone script projects, as some features for complete project support are still in development.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+### Syntax Highlighting
+Basic syntax highlighting for TMscript Language including:
+- Keywords, control flow statements, and operators
+- Data types (`int`, `float`, `double`, `string`, `byte`, `bool`, etc.)
+- Built-in functions and classes
 
-For example if there is an image subfolder under your extension project workspace:
+### IntelliSense
+- **Autocomplete** — Suggestions for functions, classes, methods, and keywords as you type
+- **Hover Documentation** — Hover over any function or type to see its documentation, parameters, and return type
+- **Signature Help** — Parameter hints when calling functions
 
-\!\[feature X\]\(images/feature-x.png\)
+### Supported TMscript Features
+Comprehensive support for TMscript 2.24:
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Installation
+
+### From VSIX
+1. Download the `.vsix` file
+2. Open VS Code
+3. Press `Ctrl+Shift+P` and run **Extensions: Install from VSIX...**
+4. Select the downloaded file
+
+### From Marketplace
+Search for "Techman Robot Script" in the VS Code Extensions view.
+
+### For Development
+
+If you want to contribute or modify the extension:
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Trejz/VS-Code-TMScript-Lang.git
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Compile the TypeScript code**
+   ```bash
+   npm run compile
+   ```
+
+4. **Test the extension**
+   - Press `F5` in VS Code to open a new Extension Development Host window
+   - Open a `.tms` file to test the extension features
+
+5. **Watch for changes** (optional, for active development)
+   ```bash
+   npm run watch
+   ```
+
+6. **Package the extension**
+   ```bash
+   npm install -g @vscode/vsce   # Install vsce globally (one-time)
+   vsce package                   # Creates a .vsix file
+   ```
+
+
+## Usage
+
+1. Open or create a `.tms` file
+2. Start writing TMscript code
+3. Use `Ctrl+Space` to trigger autocomplete suggestions
+4. Hover over functions to view documentation
+
+
+## File Association
+
+The extension automatically associates with `.tms` files, which is not the Filetype provided by Techman. To manually set the language mode:
+1. Click the language indicator in the bottom-right corner of VS Code
+2. Select **TMScript** from the list
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- VS Code 1.109.0 or higher
 
-## Extension Settings
+## Contributing
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Contributions are welcome! Visit the [GitHub repository](https://github.com/Trejz/VS-Code-TMScript-Lang) to report issues or submit pull requests.
 
-For example:
+## License
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+This extension is licensed under the [MIT License](LICENSE.md).
 
 ---
 
-## Working with Markdown
+**Note:** This extension is not officially affiliated with Techman Robot Inc. TMscript documentation is based on TMscript 2.24.
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**

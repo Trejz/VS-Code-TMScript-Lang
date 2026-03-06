@@ -1,22 +1,42 @@
-import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as vscode from "vscode";
+import * as fs from "fs";
+import * as path from "path";
+
+// Helper to get return type for a specific signature index
+// Supports both string (same for all) and array (per-signature) return types
+function getReturnType(functionInfo: any, signatureIndex: number = 0): string {
+	const ret = functionInfo.return;
+	if (Array.isArray(ret)) {
+		return ret[signatureIndex] ?? ret[0] ?? "void";
+	}
+	return ret ?? "void";
+}
+
+// Helper to get a summary of all return types (for detail display)
+function getReturnTypeSummary(functionInfo: any): string {
+	const ret = functionInfo.return;
+	if (Array.isArray(ret)) {
+		const unique = [...new Set(ret.filter((r: string) => r))];
+		return unique.join(" | ");
+	}
+	return ret ?? "void";
+}
 
 export function activate(context: vscode.ExtensionContext) {
 	// Load functions data
-	const functionsPath = path.join(context.extensionPath, 'data', 'functions.json');
-	const functionsData = JSON.parse(fs.readFileSync(functionsPath, 'utf8'));
+	const functionsPath = path.join(context.extensionPath, "data", "functions.json");
+	const functionsData = JSON.parse(fs.readFileSync(functionsPath, "utf8"));
 
 	// Register completion provider
 	const completionProvider = vscode.languages.registerCompletionItemProvider(
-		'tmscript', // language id
+		"tmscript", // language id
 		{
 			provideCompletionItems(document, position, token) {
 				const completionItems: vscode.CompletionItem[] = [];
 
-				// Create completion items for each function (skip 'types')
+				// Create completion items for each function (skip "types" and "parameterizedObjects")
 				for (const [functionName, functionInfo] of Object.entries(functionsData)) {
-					if (functionName === 'types') continue; // Skip types section
+					if (functionName === "types" || functionName === "parameterizedObjects") continue; // Skip non-function sections
 
 					const item = new vscode.CompletionItem(
 						functionName,
@@ -24,21 +44,21 @@ export function activate(context: vscode.ExtensionContext) {
 					);
 
 					// Build documentation with all signatures
-					const signatures = (functionInfo as any).signatures.map((sig: string[]) => {
-						const params = sig.join(', ');
-						return `${functionName}(${params}) → ${(functionInfo as any).return}`;
-					}).join('\n');
+					const signatures = (functionInfo as any).signatures.map((sig: string[], idx: number) => {
+						const params = sig.join(", ");
+						return `${functionName}(${params}) → ${getReturnType(functionInfo, idx)}`;
+					}).join("\n");
 
 					const documentation = new vscode.MarkdownString(
 						`${(functionInfo as any).documentation}\n\n**Signatures:**\n\`\`\`\n${signatures}\n\`\`\``
 					);
 
 					item.documentation = documentation;
-					item.detail = `Returns: ${(functionInfo as any).return}`;
+					item.detail = `Returns: ${getReturnTypeSummary(functionInfo)}`;
 
 					// Add signature help with all overloads - include parentheses and position cursor inside
 					item.insertText = new vscode.SnippetString(`${functionName}($0)`);
-					item.command = { command: 'editor.action.triggerParameterHints', title: 'Trigger Parameter Hints' };
+					item.command = { command: "editor.action.triggerParameterHints", title: "Trigger Parameter Hints" };
 
 					completionItems.push(item);
 				}
@@ -78,25 +98,25 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 
 				// Add keywords to completion
-				const keywords = ['if', 'else', 'while', 'for', 'do', 'switch', 'case', 'break', 'continue', 'return', 'default'];
+				const keywords: string[] = ["if", "else", "while", "for", "do", "switch", "case", "break", "continue", "return", "default"];
 				for (const keyword of keywords) {
 					const item = new vscode.CompletionItem(
 						keyword,
 						vscode.CompletionItemKind.Keyword
 					);
-					item.detail = `Keyword`;
+					item.detail = "Keyword";
 					item.insertText = keyword;
 					completionItems.push(item);
 				}
 
 				// Add data types to completion
-				const dataTypes = ['string', 'int', 'byte', 'float', 'double', 'bool', 'string[]', 'int[]', 'byte[]', 'float[]', 'double[]', 'bool[]'];
+				const dataTypes = ["string", "int", "byte", "float", "double", "bool", "string[]", "int[]", "byte[]", "float[]", "double[]", "bool[]"];
 				for (const dataType of dataTypes) {
 					const item = new vscode.CompletionItem(
 						dataType,
 						vscode.CompletionItemKind.TypeParameter
 					);
-					item.detail = `Data Type`;
+					item.detail = "Data Type";
 					item.insertText = dataType;
 					completionItems.push(item);
 				}
@@ -109,15 +129,109 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(completionProvider);
 
-	// Register attribute completion provider for custom types (e.g., base.Value)
-	const attributeCompletionProvider = vscode.languages.registerCompletionItemProvider(
-		'tmscript',
+	// Register completion provider for parameterized objects (Point[...].X, Base[...].Y, etc.)
+	const parameterizedObjectCompletionProvider = vscode.languages.registerCompletionItemProvider(
+		"tmscript",
 		{
 			provideCompletionItems(document, position, token) {
 				const line = document.lineAt(position).text;
 				const textBeforePosition = line.substring(0, position.character);
 
-				// Check if we're after a dot
+				// Match parameterized object patterns with index: Point[...]. Base[...]. TCP[...]. VPoint[...]. IO[...]. FT[...]. Robot[...].
+				const indexedMatch = textBeforePosition.match(/(Point|Base|TCP|VPoint|IO|FT|Robot)\s*\[[^\]]+\]\s*\.$/);
+				// Match Env. (no index required)
+				const directMatch = textBeforePosition.match(/\bEnv\.$/);
+
+				const objectName = indexedMatch ? indexedMatch[1] : (directMatch ? "Env" : null);
+				
+				if (!objectName || !functionsData.parameterizedObjects) {
+					return [];
+				}
+
+				const paramObj = functionsData.parameterizedObjects[objectName];
+				if (!paramObj || !paramObj.attributes) {
+					return [];
+				}
+
+				const completionItems: vscode.CompletionItem[] = [];
+
+				for (const [attrName, attrInfo] of Object.entries(paramObj.attributes)) {
+					const item = new vscode.CompletionItem(
+						attrName,
+						vscode.CompletionItemKind.Property
+					);
+					const mode = (attrInfo as any).mode === "R" ? "Read-only" : "Read/Write";
+					item.detail = `${(attrInfo as any).type} (${mode})`;
+					item.documentation = new vscode.MarkdownString((attrInfo as any).description);
+					item.insertText = attrName;
+					completionItems.push(item);
+				}
+
+				return completionItems;
+			}
+		},
+		"."
+	);
+
+	context.subscriptions.push(parameterizedObjectCompletionProvider);
+
+	// Register completion provider for parameterized object names (Point, Base, TCP, etc.)
+	const parameterizedObjectNameCompletionProvider = vscode.languages.registerCompletionItemProvider(
+		"tmscript",
+		{
+			provideCompletionItems(document, position, token) {
+				if (!functionsData.parameterizedObjects) {
+					return [];
+				}
+
+				// Don't suggest object names after a parameterized object pattern (e.g., Point[...].)
+				const line = document.lineAt(position).text;
+				const textBeforePosition = line.substring(0, position.character);
+				if (/(Point|Base|TCP|VPoint|IO|FT|Robot)\s*\[[^\]]+\]\s*\.$/.test(textBeforePosition) ||
+					/\bEnv\.$/.test(textBeforePosition)) {
+					return [];
+				}
+
+				const completionItems: vscode.CompletionItem[] = [];
+
+				for (const [objName, objInfo] of Object.entries(functionsData.parameterizedObjects)) {
+					const item = new vscode.CompletionItem(
+						objName,
+						vscode.CompletionItemKind.Variable
+					);
+					item.documentation = new vscode.MarkdownString((objInfo as any).description);
+					
+					// Add appropriate snippet based on index type
+					if ((objInfo as any).indexType === "none") {
+						item.insertText = new vscode.SnippetString(`${objName}.`);
+						item.detail = `Parameterized Object (${objName}.attribute)`;
+					} else if ((objInfo as any).indexType === "int") {
+						item.insertText = new vscode.SnippetString(`${objName}[\${1:0}].`);
+						item.detail = `Parameterized Object (${objName}[int].attribute)`;
+					} else {
+						item.insertText = new vscode.SnippetString(`${objName}["\${1:name}"].`);
+						item.detail = `Parameterized Object (${objName}["name"].attribute)`;
+					}
+					
+					item.command = { command: "editor.action.triggerSuggest", title: "Trigger Suggest" };
+					completionItems.push(item);
+				}
+
+				return completionItems;
+			}
+		}
+	);
+
+	context.subscriptions.push(parameterizedObjectNameCompletionProvider);
+
+	// Register attribute completion provider for custom types
+	const attributeCompletionProvider = vscode.languages.registerCompletionItemProvider(
+		"tmscript",
+		{
+			provideCompletionItems(document, position, token) {
+				const line = document.lineAt(position).text;
+				const textBeforePosition = line.substring(0, position.character);
+
 				const dotMatch = textBeforePosition.match(/(\w+)\.$/);
 				if (!dotMatch) {
 					return [];
@@ -168,11 +282,11 @@ export function activate(context: vscode.ExtensionContext) {
 							methodName,
 							vscode.CompletionItemKind.Method
 						);
-						const params = (methodInfo as any).parameters.join(', ');
+						const params = (methodInfo as any).parameters.join(", ");
 						item.detail = `Returns: ${(methodInfo as any).return}`;
 						item.documentation = new vscode.MarkdownString((methodInfo as any).documentation);
 						item.insertText = `${methodName}()`;
-						item.command = { command: 'editor.action.triggerParameterHints', title: 'Trigger Parameter Hints' };
+						item.command = { command: "editor.action.triggerParameterHints", title: "Trigger Parameter Hints" };
 						completionItems.push(item);
 					}
 				}
@@ -180,14 +294,14 @@ export function activate(context: vscode.ExtensionContext) {
 				return completionItems;
 			}
 		},
-		'.'
+		"."
 	);
 
 	context.subscriptions.push(attributeCompletionProvider);
 
 	// Register signature help provider for parameter hints
 	const signatureProvider = vscode.languages.registerSignatureHelpProvider(
-		'tmscript',
+		"tmscript",
 		{
 			provideSignatureHelp(document, position, token) {
 				const line = document.lineAt(position).text;
@@ -207,9 +321,9 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 
 				// Build signature information
-				const signatures = (functionInfo.signatures as string[][]).map(sig => {
-					const params = sig.map(p => new vscode.ParameterInformation(p)).join(', ');
-					const signatureLabel = `${functionName}(${sig.join(', ')}) → ${functionInfo.return}`;
+				const signatures = (functionInfo.signatures as string[][]).map((sig, idx) => {
+					const params = sig.map(p => new vscode.ParameterInformation(p)).join(", ");
+					const signatureLabel = `${functionName}(${sig.join(", ")}) → ${getReturnType(functionInfo, idx)}`;
 					
 					const signature = new vscode.SignatureInformation(
 						signatureLabel,
@@ -228,15 +342,15 @@ export function activate(context: vscode.ExtensionContext) {
 				return help;
 			}
 		},
-		'(',
-		','
+		"(",
+		","
 	);
 
 	context.subscriptions.push(signatureProvider);
 
 	// Register method signature help provider for custom types
 	const methodSignatureProvider = vscode.languages.registerSignatureHelpProvider(
-		'tmscript',
+		"tmscript",
 		{
 			provideSignatureHelp(document, position, token) {
 				const line = document.lineAt(position).text;
@@ -275,7 +389,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 
 				const signature = new vscode.SignatureInformation(
-					`${methodName}(${(methodInfo as any).parameters.join(', ')}) → ${(methodInfo as any).return}`,
+					`${methodName}(${(methodInfo as any).parameters.join(", ")}) → ${(methodInfo as any).return}`,
 					(methodInfo as any).documentation
 				);
 				signature.parameters = ((methodInfo as any).parameters as string[]).map(p => 
@@ -290,15 +404,15 @@ export function activate(context: vscode.ExtensionContext) {
 				return help;
 			}
 		},
-		'(',
-		','
+		"(",
+		","
 	);
 
 	context.subscriptions.push(methodSignatureProvider);
 
 	// Register hover provider for variable type information
 	const hoverProvider = vscode.languages.registerHoverProvider(
-		'tmscript',
+		"tmscript",
 		{
 			provideHover(document, position, token) {
 				// Get word at cursor position
@@ -323,7 +437,7 @@ export function activate(context: vscode.ExtensionContext) {
 						const type = builtInMatch[1];
 						const varName = builtInMatch[2];
 						const value = builtInMatch[3].trim();
-						const isArray = varLine.includes('[]');
+						const isArray = varLine.includes("[]");
 						const fullType = isArray ? `${type}[]` : type;
 						variableMap.set(varName, { type: fullType, value });
 						continue;
@@ -334,14 +448,33 @@ export function activate(context: vscode.ExtensionContext) {
 					if (customMatch && functionsData.types && functionsData.types[customMatch[1]]) {
 						const type = customMatch[1];
 						const varName = customMatch[2];
-						const value = customMatch[3]?.trim() || '';
+						const value = customMatch[3]?.trim() || "";
 						variableMap.set(varName, { type, value });
 					}
 				}
 
 				// Check if this is an attribute access (e.g., base.Value)
-				if (charBefore === '.') {
+				if (charBefore === ".") {
 					const beforeDot = line.substring(0, wordRange.start.character - 1).trim();
+					
+					// Check for parameterized object attribute access (Point[...].X, Robot[0].Joint, Env.AppVersion, etc.)
+					const indexedParamMatch = beforeDot.match(/(Point|Base|TCP|VPoint|IO|FT|Robot)\s*\[[^\]]+\]\s*$/);
+					const directParamMatch = beforeDot.match(/\bEnv$/);
+					const paramObjName = indexedParamMatch ? indexedParamMatch[1] : (directParamMatch ? "Env" : null);
+					
+					if (paramObjName && functionsData.parameterizedObjects && functionsData.parameterizedObjects[paramObjName]) {
+						const paramObj = functionsData.parameterizedObjects[paramObjName];
+						const attrInfo = paramObj.attributes ? paramObj.attributes[word] : null;
+						
+						if (attrInfo) {
+							const mode = (attrInfo as any).mode === "R" ? "Read-only" : "Read/Write";
+							const markdown = new vscode.MarkdownString(
+								`**${paramObjName}.${word}**\n\n${(attrInfo as any).description}\n\n**Type:** \`${(attrInfo as any).type}\`\n\n**Mode:** ${mode}`
+							);
+							return new vscode.Hover(markdown);
+						}
+					}
+
 					const varName = beforeDot.split(/[\s\(\)\[\]\{\},;]/).pop();
 
 					if (varName && variableMap.has(varName)) {
@@ -363,7 +496,7 @@ export function activate(context: vscode.ExtensionContext) {
 							// Check for method
 							const methodInfo = typeInfo.methods ? typeInfo.methods[word] : null;
 							if (methodInfo) {
-								const params = (methodInfo as any).parameters.join(', ');
+								const params = (methodInfo as any).parameters.join(", ");
 								const signature = `${word}(${params}) → ${(methodInfo as any).return}`;
 								const markdown = new vscode.MarkdownString(
 									`**Method:** \`${word}\`\n\n${(methodInfo as any).documentation}\n\n**Signature:**\n\`\`\`\n${signature}\n\`\`\``
@@ -375,13 +508,13 @@ export function activate(context: vscode.ExtensionContext) {
 					return null;
 				}
 
-				// Check if word is a function (skip 'types' key)
-				if (functionsData[word] && word !== 'types' && (functionsData[word] as any).signatures) {
+				// Check if word is a function (skip "types" key)
+				if (functionsData[word] && word !== "types" && (functionsData[word] as any).signatures) {
 					const functionInfo = functionsData[word];
-					const signatures = (functionInfo.signatures as string[][]).map(sig => {
-						const params = sig.join(', ');
-						return `${word}(${params}) → ${functionInfo.return}`;
-					}).join('\n');
+					const signatures = (functionInfo.signatures as string[][]).map((sig, idx) => {
+						const params = sig.join(", ");
+						return `${word}(${params}) → ${getReturnType(functionInfo, idx)}`;
+					}).join("\n");
 
 					const markdown = new vscode.MarkdownString(
 						`**${word}**\n\n${functionInfo.documentation}\n\n**Signatures:**\n\`\`\`\n${signatures}\n\`\`\``
@@ -395,7 +528,28 @@ export function activate(context: vscode.ExtensionContext) {
 					let markdownContent = `**Type:** \`${word}\`\n\n${(typeInfo as any).description}`;
 					
 					if ((typeInfo as any).constructor) {
-						markdownContent += `\n\n**Constructor:**\n\`\`\`\n${(typeInfo as any).constructor}\n\`\`\``;
+						const constructors = Array.isArray((typeInfo as any).constructor) 
+							? (typeInfo as any).constructor.join('\n') 
+							: (typeInfo as any).constructor;
+						markdownContent += `\n\n**Constructor:**\n\`\`\`\n${constructors}\n\`\`\``;
+					}
+					
+					const markdown = new vscode.MarkdownString(markdownContent);
+					return new vscode.Hover(markdown);
+				}
+
+				// Check if word is a parameterized object (Point, Base, TCP, VPoint, IO, Robot, FT, Env)
+				if (functionsData.parameterizedObjects && functionsData.parameterizedObjects[word]) {
+					const paramObj = functionsData.parameterizedObjects[word];
+					let markdownContent = `**Parameterized Object:** \`${word}\`\n\n${(paramObj as any).description}`;
+					
+					// List available attributes
+					if ((paramObj as any).attributes) {
+						const attrs = Object.entries((paramObj as any).attributes).map(([name, info]) => {
+							const mode = (info as any).mode === "R" ? "R" : "R/W";
+							return `- \`${name}\` (${(info as any).type}, ${mode})`;
+						}).join("\n");
+						markdownContent += `\n\n**Attributes:**\n${attrs}`;
 					}
 					
 					const markdown = new vscode.MarkdownString(markdownContent);
@@ -423,11 +577,158 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(hoverProvider);
 
 	// Register diagnostic provider for undefined variables and non-existent functions
-	const diagnosticCollection = vscode.languages.createDiagnosticCollection('tmscript');
+	const diagnosticCollection = vscode.languages.createDiagnosticCollection("tmscript");
 	context.subscriptions.push(diagnosticCollection);
+
+	// Helper function to infer the type of an expression
+	const inferExpressionType = (expr: string): string | null => {
+		const trimmed = expr.trim();
+		
+		// Remove trailing semicolon if present
+		const cleanExpr = trimmed.replace(/;$/, "").trim();
+		
+		// Check if it's a string literal
+		if (/^"[^"]*"$/.test(cleanExpr)) {
+			return "string";
+		}
+		
+		// Check if it's a boolean literal
+		if (cleanExpr === "true" || cleanExpr === "false") {
+			return "bool";
+		}
+		
+		// Check if it's a float/double literal (has decimal point)
+		if (/^-?\d+\.\d+$/.test(cleanExpr)) {
+			return "float";
+		}
+		
+		// Check if it's an integer literal
+		if (/^-?\d+$/.test(cleanExpr)) {
+			return "int";
+		}
+		
+		// Check if it's a parameterized object attribute access
+		// Match: Point["name"].Attr, Base["name",0].Attr, Robot[0].Attr, IO["name"].DI, etc.
+		// Also match with array index: Base["name"].Value[1], Point["p1"].Joint[0], etc.
+		const paramObjMatch = cleanExpr.match(/^(Point|Base|TCP|VPoint|IO|FT|Robot)\s*\[[^\]]+\]\s*\.(\w+)(\[\d+\])?/);
+		if (paramObjMatch) {
+			const objName = paramObjMatch[1];
+			const attrName = paramObjMatch[2];
+			const hasArrayIndex = paramObjMatch[3]; // e.g., [1]
+			if (functionsData.parameterizedObjects && functionsData.parameterizedObjects[objName]) {
+				const paramObj = functionsData.parameterizedObjects[objName] as any;
+				if (paramObj.attributes && paramObj.attributes[attrName]) {
+					let attrType = paramObj.attributes[attrName].type;
+					// If there's an array index and the type is an array, return the base type
+					if (hasArrayIndex && attrType.includes("[]")) {
+						return attrType.replace("[]", "");
+					}
+					return attrType;
+				}
+			}
+		}
+		
+		// Check for Env.Attr (with optional array index)
+		const envMatch = cleanExpr.match(/^Env\.(\w+)(\[\d+\])?/);
+		if (envMatch) {
+			const attrName = envMatch[1];
+			const hasArrayIndex = envMatch[2];
+			if (functionsData.parameterizedObjects && functionsData.parameterizedObjects["Env"]) {
+				const paramObj = functionsData.parameterizedObjects["Env"] as any;
+				if (paramObj.attributes && paramObj.attributes[attrName]) {
+					let attrType = paramObj.attributes[attrName].type;
+					if (hasArrayIndex && attrType.includes("[]")) {
+						return attrType.replace("[]", "");
+					}
+					return attrType;
+				}
+			}
+		}
+		
+		// Check if it's a function call (with optional array index for extracting single element)
+		// Match: FuncName(...) or FuncName(...)[0]
+		const funcMatch = cleanExpr.match(/^(\w+)\s*\([^)]*\)(\[\d+\])?/);
+		if (funcMatch) {
+			const funcName = funcMatch[1];
+			const hasArrayIndex = funcMatch[2];
+			if (functionsData[funcName] && funcName !== "types" && funcName !== "parameterizedObjects") {
+				const funcInfo = functionsData[funcName] as any;
+				// Get the return type (could be string or array for per-signature types)
+				if (funcInfo.returnType) {
+					let returnType: string;
+					if (Array.isArray(funcInfo.returnType)) {
+						// Per-signature return types - return the first one as default
+						returnType = funcInfo.returnType[0];
+					} else {
+						returnType = funcInfo.returnType;
+					}
+					// If there's an array index and the type is an array, return the base type
+					if (hasArrayIndex && returnType.includes("[]")) {
+						return returnType.replace("[]", "");
+					}
+					return returnType;
+				}
+			}
+		}
+		
+		// Check if it's an array literal
+		if (cleanExpr.startsWith("[")) {
+			// Try to infer the element type
+			const innerContent = cleanExpr.slice(1, -1).trim();
+			if (innerContent) {
+				const firstElement = innerContent.split(",")[0].trim();
+				const elementType = inferExpressionType(firstElement);
+				if (elementType && !elementType.includes("[]")) {
+					return elementType + "[]";
+				}
+			}
+			return "array";
+		}
+		
+		// Check if it's a known variable (would need variableTypes map passed in)
+		// For now, return null for unknown
+		return null;
+	};
 
 	const updateDiagnostics = (document: vscode.TextDocument) => {
 		const diagnostics: vscode.Diagnostic[] = [];
+
+		// Track multi-line comment state
+		let inBlockComment = false;
+
+		// Helper function to remove comments from a line
+		const removeComments = (line: string): string => {
+			let result = line;
+			
+			// Handle block comment state
+			if (inBlockComment) {
+				const endIndex = result.indexOf("*/");
+				if (endIndex !== -1) {
+					inBlockComment = false;
+					result = " ".repeat(endIndex + 2) + result.substring(endIndex + 2);
+				} else {
+					return " ".repeat(result.length); // Entire line is in block comment
+				}
+			}
+			
+			// Remove block comments that start and end on this line
+			result = result.replace(/\/\*.*?\*\//g, match => " ".repeat(match.length));
+			
+			// Check for block comment start without end
+			const blockStartIndex = result.indexOf("/*");
+			if (blockStartIndex !== -1) {
+				inBlockComment = true;
+				result = result.substring(0, blockStartIndex) + " ".repeat(result.length - blockStartIndex);
+			}
+			
+			// Remove single-line comments
+			const lineCommentIndex = result.indexOf("//");
+			if (lineCommentIndex !== -1) {
+				result = result.substring(0, lineCommentIndex) + " ".repeat(result.length - lineCommentIndex);
+			}
+			
+			return result;
+		};
 
 		// Collect all defined variables and their types
 		const definedVariables: Set<string> = new Set();
@@ -435,9 +736,10 @@ export function activate(context: vscode.ExtensionContext) {
 		
 		for (let i = 0; i < document.lineCount; i++) {
 			const line = document.lineAt(i).text;
+			const lineWithoutComments = removeComments(line);
 			
 			// Match variable declarations: type variableName = value
-			const varDeclMatch = line.match(/\b((?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?)\s+(\w+)\s*=\s*(.+)/);
+			const varDeclMatch = lineWithoutComments.match(/\b((?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?)\s+(\w+)\s*=\s*(.+)/);
 			if (varDeclMatch) {
 				const varType = varDeclMatch[1];
 				const varName = varDeclMatch[2];
@@ -446,42 +748,73 @@ export function activate(context: vscode.ExtensionContext) {
 				definedVariables.add(varName);
 				variableTypes.set(varName, varType);
 				
-				// Check for type mismatch
-				const isArrayType = varType.includes('[]');
-				const isArrayValue = varValue.startsWith('[');
+				// Check for type mismatch using the helper function
+				const inferredType = inferExpressionType(varValue);
 				
-				if (isArrayType && !isArrayValue) {
-					// Array type assigned non-array value
-					const typeStart = line.indexOf(varType);
-					const range = new vscode.Range(
-						new vscode.Position(i, typeStart),
-						new vscode.Position(i, typeStart + varType.length)
-					);
-					diagnostics.push(
-						new vscode.Diagnostic(
-							range,
-							`Type mismatch: '${varType}' expected but '${varValue.match(/\w+/) ? (varValue.match(/\w+/)?.[0]) : 'non-array'}' provided`,
-							vscode.DiagnosticSeverity.Error
-						)
-					);
-				} else if (!isArrayType && isArrayValue) {
-					// Non-array type assigned array value
-					const typeStart = line.indexOf(varType);
-					const range = new vscode.Range(
-						new vscode.Position(i, typeStart),
-						new vscode.Position(i, typeStart + varType.length)
-					);
-					diagnostics.push(
-						new vscode.Diagnostic(
-							range,
-							`Type mismatch: '${varType}' expected but array provided`,
-							vscode.DiagnosticSeverity.Error
-						)
-					);
+				if (inferredType !== null) {
+					// We have a known type for the expression
+					const isArrayType = varType.includes("[]");
+					const isInferredArray = inferredType === "array" || inferredType.includes("[]");
+					
+					// Check if types are compatible
+					let typeMismatch = false;
+					let mismatchMessage = "";
+					
+					if (isArrayType && !isInferredArray) {
+						typeMismatch = true;
+						mismatchMessage = `Type mismatch: "${varType}" expected but "${inferredType}" provided`;
+					} else if (!isArrayType && isInferredArray) {
+						typeMismatch = true;
+						mismatchMessage = `Type mismatch: "${varType}" expected but array provided`;
+					} else if (inferredType !== "array") {
+						// Both are same array/non-array status, check base types
+						const baseVarType = varType.replace("[]", "");
+						const baseInferredType = inferredType.replace("[]", "");
+						
+						// Only flag error if base types are clearly incompatible
+						if (baseVarType !== baseInferredType && baseInferredType !== "void") {
+							typeMismatch = true;
+							mismatchMessage = `Type mismatch: "${varType}" expected but "${inferredType}" provided`;
+						}
+					}
+					
+					if (typeMismatch) {
+						const typeStart = line.indexOf(varType);
+						const range = new vscode.Range(
+							new vscode.Position(i, typeStart),
+							new vscode.Position(i, typeStart + varType.length)
+						);
+						diagnostics.push(
+							new vscode.Diagnostic(
+								range,
+								mismatchMessage,
+								vscode.DiagnosticSeverity.Error
+							)
+						);
+					}
+				} else {
+					// Fallback: simple array check for unknown expressions
+					const isArrayType = varType.includes("[]");
+					const isArrayValue = varValue.startsWith("[");
+					
+					if (!isArrayType && isArrayValue) {
+						const typeStart = line.indexOf(varType);
+						const range = new vscode.Range(
+							new vscode.Position(i, typeStart),
+							new vscode.Position(i, typeStart + varType.length)
+						);
+						diagnostics.push(
+							new vscode.Diagnostic(
+								range,
+								`Type mismatch: "${varType}" expected but array provided`,
+								vscode.DiagnosticSeverity.Error
+							)
+						);
+					}
 				}
 			} else {
 				// Also capture declarations without assignment for variable tracking
-				const varDeclNoAssignMatch = line.match(/\b(?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?\s+(\w+)\s*;/);
+				const varDeclNoAssignMatch = lineWithoutComments.match(/\b(?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?\s+(\w+)\s*;/);
 				if (varDeclNoAssignMatch) {
 					definedVariables.add(varDeclNoAssignMatch[1]);
 				}
@@ -489,27 +822,62 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		// Keywords to skip
-		const keywords = new Set(['if', 'while', 'for', 'return', 'switch', 'do', 'break', 'continue', 'case', 'else', 'default', 'void']);
+		const keywords = new Set(["if", "while", "for", "return", "switch", "do", "break", "continue", "case", "else", "default", "void"]);
+
+		// Reset block comment state for second pass
+		inBlockComment = false;
 
 		// Check for undefined variables and non-existent functions
 		for (let i = 0; i < document.lineCount; i++) {
 			const line = document.lineAt(i).text;
+			const lineWithoutComments = removeComments(line);
 
 			// Remove strings from the line for checking (replace content in quotes with spaces)
-			let lineWithoutStrings = line.replace(/"[^"]*"/g, match => ' '.repeat(match.length));
+			let lineWithoutStrings = lineWithoutComments.replace(/"[^"]*"/g, match => " ".repeat(match.length));
 
 			// Check for function calls
 			const functionMatches = [...lineWithoutStrings.matchAll(/\b([A-Za-z_]\w+)\s*\(/g)];
 			for (const match of functionMatches) {
 				const functionName = match[1];
 				
-				// Skip if it's a keyword
+				// Skip if it"s a keyword
 				if (keywords.has(functionName)) {
+					continue;
+				}
+
+				// Check if it's a method call (preceded by a dot)
+				const precedingText = lineWithoutStrings.substring(0, match.index);
+				if (/\.\s*$/.test(precedingText)) {
+					// It's a method call - validate against the variable's type
+					const methodCallMatch = precedingText.match(/\b(\w+)\s*\.$/);
+					if (methodCallMatch) {
+						const varName = methodCallMatch[1];
+						const varType = variableTypes.get(varName);
+						
+						if (varType && functionsData.types && functionsData.types[varType]) {
+							const typeInfo = functionsData.types[varType] as any;
+							if (typeInfo.methods && !typeInfo.methods[functionName]) {
+								const startChar = match.index!;
+								const endChar = startChar + functionName.length;
+								const range = new vscode.Range(
+									new vscode.Position(i, startChar),
+									new vscode.Position(i, endChar)
+								);
+								diagnostics.push(
+									new vscode.Diagnostic(
+										range,
+										`Method "${functionName}" does not exist on type "${varType}"`,
+										vscode.DiagnosticSeverity.Error
+									)
+								);
+							}
+						}
+					}
 					continue;
 				}
 				
 				// Check if function exists in functionsData
-				if (!functionsData[functionName] || functionName === 'types') {
+				if (!functionsData[functionName] || functionName === "types") {
 					const startChar = match.index!;
 					const endChar = startChar + functionName.length;
 					const range = new vscode.Range(
@@ -519,7 +887,7 @@ export function activate(context: vscode.ExtensionContext) {
 					diagnostics.push(
 						new vscode.Diagnostic(
 							range,
-							`Function '${functionName}' does not exist`,
+							`Function "${functionName}" does not exist`,
 							vscode.DiagnosticSeverity.Error
 						)
 					);
@@ -532,27 +900,37 @@ export function activate(context: vscode.ExtensionContext) {
 				const varName = match[1];
 				const context = lineWithoutStrings.substring(0, match.index);
 				
-				// Skip if it's a declaration (preceded by type keyword or custom type)
+				// Skip if it's an attribute access (preceded by .)
+				if (/\.\s*$/.test(context)) {
+					continue;
+				}
+				
+				// Skip if it"s a declaration (preceded by type keyword or custom type)
 				const isDeclaration = /(?:string|int|byte|float|double|bool|[A-Z]\w+)\s+$/.test(context);
 				
-				// Skip if it's a keyword
+				// Skip if it"s a keyword
 				if (keywords.has(varName)) {
 					continue;
 				}
 
-				// Skip if it's a type name
-				if (['string', 'int', 'byte', 'float', 'double', 'bool'].includes(varName) || 
+				// Skip if it"s a type name
+				if (["string", "int", "byte", "float", "double", "bool"].includes(varName) || 
 					(functionsData.types && functionsData.types[varName])) {
 					continue;
 				}
 
-				// Skip if followed by ( - it's a function call that was already checked
-				if (lineWithoutStrings[match.index! + varName.length] === '(') {
+				// Skip if it"s a parameterized object name
+				if (functionsData.parameterizedObjects && functionsData.parameterizedObjects[varName]) {
 					continue;
 				}
 
-				// Skip if it's an external variable (var_ or g_ prefix)
-				if (varName.startsWith('var_') || varName.startsWith('g_')) {
+				// Skip if followed by ( - it"s a function call that was already checked
+				if (lineWithoutStrings[match.index! + varName.length] === "(") {
+					continue;
+				}
+
+				// Skip if it"s an external variable (var_ or g_ prefix)
+				if (varName.startsWith("var_") || varName.startsWith("g_")) {
 					continue;
 				}
 
@@ -566,7 +944,7 @@ export function activate(context: vscode.ExtensionContext) {
 					diagnostics.push(
 						new vscode.Diagnostic(
 							range,
-							`Variable '${varName}' is not defined`,
+							`Variable "${varName}" is not defined`,
 							vscode.DiagnosticSeverity.Error
 						)
 					);
@@ -581,15 +959,15 @@ export function activate(context: vscode.ExtensionContext) {
 			const line = document.lineAt(i).text;
 			
 			// Remove strings from the line for bracket checking
-			let lineWithoutStrings = line.replace(/"[^"]*"/g, match => ' '.repeat(match.length));
+			let lineWithoutStrings = line.replace(/"[^"]*"/g, match => " ".repeat(match.length));
 			
 			for (let j = 0; j < lineWithoutStrings.length; j++) {
 				const char = lineWithoutStrings[j];
 				
-				if (char === '(' || char === '{') {
+				if (char === "(" || char === "{") {
 					bracketStack.push({type: char, line: i, char: j});
-				} else if (char === ')' || char === '}') {
-					const expectedClose = char === ')' ? '(' : '{';
+				} else if (char === ")" || char === "}") {
+					const expectedClose = char === ")" ? "(" : "{";
 					
 					if (bracketStack.length === 0 || bracketStack[bracketStack.length - 1].type !== expectedClose) {
 						// Closing bracket without matching opening bracket
@@ -600,7 +978,7 @@ export function activate(context: vscode.ExtensionContext) {
 						diagnostics.push(
 							new vscode.Diagnostic(
 								range,
-								`Unmatched closing bracket '${char}'`,
+								`Unmatched closing bracket "${char}"`,
 								vscode.DiagnosticSeverity.Error
 							)
 						);
@@ -622,7 +1000,7 @@ export function activate(context: vscode.ExtensionContext) {
 			diagnostics.push(
 				new vscode.Diagnostic(
 					range,
-					`Unclosed bracket '${unclosed.type}' - missing '${unclosed.type === '(' ? ')' : '}'}'`,
+					`Unclosed bracket "${unclosed.type}" - missing "${unclosed.type === "(" ? ")" : "}"}"`,
 					vscode.DiagnosticSeverity.Error
 				)
 			);
@@ -631,14 +1009,30 @@ export function activate(context: vscode.ExtensionContext) {
 		diagnosticCollection.set(document.uri, diagnostics);
 	};
 
-	// Update diagnostics when document is opened or changed
+	// Update diagnostics when document is opened or changed (only for tmscript files)
 	context.subscriptions.push(
-		vscode.workspace.onDidOpenTextDocument(updateDiagnostics),
-		vscode.workspace.onDidChangeTextDocument(event => updateDiagnostics(event.document))
+		vscode.workspace.onDidOpenTextDocument(doc => {
+			if (doc.languageId === "tmscript") {
+				updateDiagnostics(doc);
+			}
+		}),
+		vscode.workspace.onDidChangeTextDocument(event => {
+			if (event.document.languageId === "tmscript") {
+				updateDiagnostics(event.document);
+			}
+		}),
+		vscode.workspace.onDidCloseTextDocument(doc => {
+			// Clear diagnostics when document is closed
+			diagnosticCollection.delete(doc.uri);
+		})
 	);
 
-	// Update diagnostics for currently open documents
-	vscode.workspace.textDocuments.forEach(updateDiagnostics);
+	// Update diagnostics for currently open tmscript documents
+	vscode.workspace.textDocuments.forEach(doc => {
+		if (doc.languageId === "tmscript") {
+			updateDiagnostics(doc);
+		}
+	});
 }
 
 export function deactivate() {}

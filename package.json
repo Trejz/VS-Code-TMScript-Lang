@@ -1,8 +1,15 @@
 {
-  "name": "techman",
+  "name": "tmscript",
   "displayName": "Techman Robot Script",
-  "description": ".tms",
-  "version": "0.0.1",
+  "description": "Language support for Techman Robot Script (.tms)",
+  "version": "0.5.0",
+  "publisher": "TreJZ",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Trejz/VS-Code-TMScript-Lang"
+  },
+  "license": "MIT",
   "engines": {
     "vscode": "^1.109.0"
   },
@@ -13,6 +20,9 @@
   },
   "categories": [
     "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:tmscript"
   ],
   "contributes": {
     "languages": [
@@ -33,12 +43,6 @@
         "language": "tmscript",
         "scopeName": "source.tmscript",
         "path": "./syntaxes/tmscript.tmLanguage.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "tmscript",
-        "path": "./snippets/tmscript.json"
       }
     ]
   },

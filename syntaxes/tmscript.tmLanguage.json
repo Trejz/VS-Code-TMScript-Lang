@@ -19,6 +19,19 @@
         }
 	],
 	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.tmscript",
+					"match": "//.*$"
+				},
+				{
+					"name": "comment.block.tmscript",
+					"begin": "/\\*",
+					"end": "\\*/"
+				}
+			]
+		},
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.tmscript",
