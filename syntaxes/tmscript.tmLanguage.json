@@ -1,0 +1,58 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "TMScript",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},
+        {
+            "include": "#comments" 
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#types"
+        }
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.tmscript",
+				"match": "\\b(if|while|for|return|switch|do while|break|continue|case|else|else if|default|void)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.tmscript",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.tmscript",
+					"match": "\\\\."
+				}
+			]
+		},
+        "functions": {
+            "patterns": [
+                {
+                "name": "entity.name.function.tmscript",
+                "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()"
+                }
+            ]
+        },
+        "types": {
+            "patterns": [
+                {
+                "name": "storage.type.tmscript",
+                "match": "\\b(string|int|byte|float|double|bool)\\b(?:\\[\\])?"
+                }
+            ]
+        }
+
+	},
+	"scopeName": "source.tmscript"
+}

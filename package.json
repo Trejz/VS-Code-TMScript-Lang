@@ -1,0 +1,50 @@
+{
+  "name": "techman",
+  "displayName": "Techman Robot Script",
+  "description": ".tms",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.109.0"
+  },
+  "main": "./out/extension.js",
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "tmscript",
+        "aliases": [
+          "TMScript",
+          "tmscript"
+        ],
+        "extensions": [
+          ".tms"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tmscript",
+        "scopeName": "source.tmscript",
+        "path": "./syntaxes/tmscript.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "tmscript",
+        "path": "./snippets/tmscript.json"
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "@types/vscode": "^1.109.0",
+    "typescript": "^5.9.3"
+  }
+}

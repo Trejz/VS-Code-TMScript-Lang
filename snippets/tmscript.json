@@ -1,0 +1,18 @@
+{
+  "Byte_ToInt16": {
+    "return": "int",
+    "documentation": "Converts byte data to a 16-bit integer.",
+    "signatures": [
+      ["byte"],
+      ["byte", "index"],
+      ["byte", "start", "length"]
+    ]
+  },
+  "MoveJ": {
+    "return": "void",
+    "documentation": "Joint movement command.",
+    "signatures": [
+      ["target", "speed"]
+    ]
+  }
+}

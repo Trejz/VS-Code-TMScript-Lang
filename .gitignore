@@ -1,0 +1,11 @@
+node_modules
+*.vsix
+.env
+out/
+.vscode/
+.vscode-test/
+*.log
+coverage/
+.DS_Store
+thumbs.db
+*.pdf

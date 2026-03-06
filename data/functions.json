@@ -1,0 +1,321 @@
+{
+  "types": {
+    "TBase": {
+      "description": "Base data type with Value and Type attributes",
+      "constructor": "TBase <basename> = string, {float, float, float, float, float}",
+      "attributes": {
+        "Value": "string",
+        "Type": "int"
+      },
+      "methods": {
+        "GetValue": {
+          "documentation": "Gets the value at the specified index",
+          "parameters": [
+            "int - Index"
+          ],
+          "return": "float"
+        }
+      }
+    }
+  },
+  "Byte_ToInt16": {
+    "return": "int",
+    "documentation": "Transform the first two bytes of the assigned byte array to integer, and returns in int type.",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)", "int - Type (0=signed (Default), 1=unsigned)"]
+    ]
+  },
+  "Byte_ToInt32": {
+    "return": "int",
+    "documentation": "Transform the first four bytes of byte array to integer, and return in int type.",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)"]
+    ]
+  },
+  "Byte_ToFloat": {
+    "return": "float",
+    "documentation": "Transform the first four bytes of byte array to floating-point number, and return in floating-point type.",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)"]
+    ]
+  },
+  "Byte_ToDouble": {
+    "return": "double",
+    "documentation": "Transform the first eight bytes of byte array to floating-point number, and return in double type.",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - int - Endian mode (0=Little (Default), 1=Big)"]
+    ]
+  },
+  "Byte_ToInt16Array": {
+    "return": "int[]",
+    "documentation": "Transform byte array to integer every 2 bytes, and return in int[] type.",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)", "int - Type (0=signed (Default), 1=unsigned)"]
+    ]
+  },
+  "Byte_ToInt32Array": {
+    "return": "int[]",
+    "documentation": "Transform byte array to integer every 4 bytes, and return in int[] type.",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)"]
+    ]
+  },
+  "Byte_ToFloatArray": {
+    "return": "float[]",
+    "documentation": "Transform byte array to integer every 4 bytes, and return in float[] type.",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)"]
+    ]
+  },
+  "Byte_ToDoubleArray": {
+    "return": "double[]",
+    "documentation": "Transform byte array to double every 8 bytes, and return in double[] type.",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Endian mode (0=Little (Default), 1=Big)"]
+    ]
+  },
+  "Byte_ToString": {
+    "return": "string",
+    "documentation": "Transform byte array to string",
+    "signatures": [
+      ["byte[] - The input byte array"],
+      ["byte[] - The input byte array", "int - Encoding Rule (0=UTF8 (Default) (0x00 END), 1=HEX BINARY, 2=ASCII (0x00 END))"]
+    ]
+  },
+  "Byte_Concat": {
+    "return": "byte[]",
+    "documentation": "Concatenate two byte arrays, or concatenate one array with a byte value.",
+    "signatures": [
+      ["byte[] - The input byte array", "byte[] - The byte value concatenated after the byte array"],
+      ["byte[] - The input byte array1", "byte[] - The input byte array2, concatenated to the end of array1"],
+      ["byte[] - The input byte array1", "byte[] - The input byte array2, concatenated to the end of array1", "int - Number of element in array2 to be concatenated: 0 to len(array2)"],
+      ["byte[] - The input byte array1", "int - Starting index of array1: 0 to len(array1)", "int - Number of element in array1 to be concatenated: 0 to len(array1)", "byte[] - The input byte array2, concatenated to the end of array1", "int - Starting index of array2: 0 to len(array2)","int - Number of element in array2 to be concatenated: 0 to len(array2)"],
+      ["byte or byte[] - The input byte array or value", "byte or byte[] - The input byte array or value"]
+    ]
+  },
+  "String_ToInteger": {
+    "return": "int or int[]",
+    "documentation": "Transform string to integer (int type)",
+    "signatures": [
+      ["string - Input string"],
+      ["string - Input string", "int - string’s notation (10=decimal (Default), 16=hexadecimal, 2=binary)"],
+      ["string[] - Input string array", "int - string’s notation (10=decimal (Default), 16=hexadecimal, 2=binary)"]
+    ]
+  },
+  "String_ToFloat": {
+    "return": "float or float[]",
+    "documentation": "Transform string to floating-point (floating-point type)",
+    "signatures": [
+      ["string - Input string"],
+      ["string - Input string", "int - string’s notation (10=decimal (Default), 16=hexadecimal, 2=binary)"],
+      ["string[] - Input string array", "int - string’s notation (10=decimal (Default), 16=hexadecimal, 2=binary)"]
+    ]
+  },
+  "String_ToDouble": {
+    "return": "double or double[]",
+    "documentation": "Transform string to floating-point number (double type)",
+    "signatures": [
+      ["string - Input string"],
+      ["string - Input string", "int - string’s notation (10=decimal (Default), 16=hexadecimal, 2=binary)"],
+      ["string[] - Input string array", "int - string’s notation (10=decimal (Default), 16=hexadecimal, 2=binary)"]
+    ]
+  },
+  "String_ToByte": {
+    "return": "byte[]",
+    "documentation": "Transform string to byte array",
+    "signatures": [
+      ["string - Input string"],
+      ["string - Input string", "int - Encoding Rule (0=UTF8 (Default), 1=HEX BINARY, 2=ASCII"]
+    ]
+  },
+  "String_IndexOf": {
+    "return": "int",
+    "documentation": "Search the address of the first occurrence of a specified strin from left to right.",
+    "signatures": [
+      ["string - Input string", "string - The specified string to search", "int - The initial address to start searching (0 to len(string))"],
+      ["string - Input string", "string - The specified string to search"],
+      ["string[] - Input string array", "string - The specified string to search", "int - The initial address to start searching (0 to len(string))"],
+      ["string[] - Input string array", "string - The specified string to search"]
+    ]
+  },
+  "String_LastIndexOf": {
+    "return": "int",
+    "documentation": "Search the address of the last occurrence of a specified strin from right to left.",
+    "signatures": [
+      ["string - Input string", "string - The specified string to search", "int - The initial address to start searching (0 to len(string))"],
+      ["string - Input string", "string - The specified string to search"],
+      ["string[] - Input string array", "string - The specified string to search", "int - The initial address to start searching (0 to len(string))"],
+      ["string[] - Input string array", "string - The specified string to search"]
+    ]
+  },
+  "String_DiffIndexOf": {
+    "return": "int",
+    "documentation": "Compare the address where the first string difference occurs starting from the start address.",
+    "signatures": [
+      ["string - Input string 1", "string - Input string 2"],
+      ["string - Input string 1", "string - Input string 2", "int - Initial address to start comparing (0 to len(string1))"]
+    ]
+  },
+  "String_Substring": {
+    "return": "string",
+    "documentation": "Retrieve a substring from input string",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  },
+  "": {
+    "return": "",
+    "documentation": "",
+    "signatures": [
+      [""],
+      ["", ""]
+    ]
+  }
+}
