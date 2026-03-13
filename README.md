@@ -1,6 +1,6 @@
 # TMscript Language Support for VS Code
 
-Language support for **Techman Robot Script (TMscript)**. This extension is primarily designed for use with the **Script Node** in TMflow projects, full standalone script projects are supported but features are still in development.
+Language support for **Techman Robot Script (TMscript)**. This extension is primarily designed for use with the **Script Node** in TMflow projects. Standalone script projects are also supported, but some features are still in development.
 
 ## Features
 

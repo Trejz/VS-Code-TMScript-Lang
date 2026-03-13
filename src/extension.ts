@@ -22,15 +22,59 @@ function getReturnTypeSummary(functionInfo: any): string {
 	return ret ?? "void";
 }
 
+// Shared helper to remove comments from a line while tracking block comment state.
+// Returns the processed text (or null if the line is entirely within a block comment)
+// along with the updated inBlockComment flag.
+function removeCommentsFromLine(
+	line: string,
+	inBlockComment: boolean
+): { text: string | null; inBlockComment: boolean } {
+	let text = line;
+	// Handle being inside an existing block comment
+	if (inBlockComment) {
+		const endIndex = text.indexOf("*/");
+		if (endIndex !== -1) {
+			// End of block comment found; mask the commented portion with spaces
+			inBlockComment = false;
+			text = " ".repeat(endIndex + 2) + text.substring(endIndex + 2);
+		} else {
+			// Entire line is still within block comment; skip it
+			return { text: null, inBlockComment };
+		}
+	}
+	// Remove inline block comments on the same line, preserving length with spaces
+	text = text.replace(/\/\*.*?\*\//g, match => " ".repeat(match.length));
+	// Detect start of a new block comment and keep only the code before it
+	const blockStartIndex = text.indexOf("/*");
+	if (blockStartIndex !== -1) {
+		inBlockComment = true;
+		text = text.substring(0, blockStartIndex);
+	}
+	// Strip line comments
+	const lineCommentIndex = text.indexOf("//");
+	if (lineCommentIndex !== -1) {
+		text = text.substring(0, lineCommentIndex);
+	}
+	return { text, inBlockComment };
+}
+
 // Interface for user-defined function info
 interface UserDefinedFunction {
 	returnType: string;
 	parameters: string[];
 	lineNumber: number;
 }
+// Cache for user-defined functions per document URI and version
+const userDefinedFunctionCache: Map<string, { version: number; functions: Map<string, UserDefinedFunction> }> = new Map();
 
 // Helper function to parse user-defined functions from a document
 function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, UserDefinedFunction> {
+    const cacheKey = document.uri.toString();
+ 	const cached = userDefinedFunctionCache.get(cacheKey);
+ 	if (cached && cached.version === document.version) {
+ 		// Return a shallow copy to avoid callers mutating the cached Map
+ 		return new Map(cached.functions);
+ 	}
 	const functions: Map<string, UserDefinedFunction> = new Map();
 	
 	// Track multi-line comment state
@@ -38,39 +82,20 @@ function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, U
 	
 	for (let i = 0; i < document.lineCount; i++) {
 		let line = document.lineAt(i).text;
-		
-		// Handle block comments
-		if (inBlockComment) {
-			const endIndex = line.indexOf("*/");
-			if (endIndex !== -1) {
-				inBlockComment = false;
-				line = " ".repeat(endIndex + 2) + line.substring(endIndex + 2);
-			} else {
-				continue; // Skip lines inside block comments
-			}
+        // Handle comments (block and line) with shared helper
+ 		const commentResult = removeCommentsFromLine(line, inBlockComment);
+ 		inBlockComment = commentResult.inBlockComment;
+ 		if (commentResult.text === null) {
+ 			continue;
 		}
 		
-		// Remove inline block comments
-		line = line.replace(/\/\*.*?\*\//g, match => " ".repeat(match.length));
-		
-		// Check for block comment start
-		const blockStartIndex = line.indexOf("/*");
-		if (blockStartIndex !== -1) {
-			inBlockComment = true;
-			line = line.substring(0, blockStartIndex);
-		}
-		
-		// Remove single-line comments
-		const lineCommentIndex = line.indexOf("//");
-		if (lineCommentIndex !== -1) {
-			line = line.substring(0, lineCommentIndex);
-		}
-		
+		line = commentResult.text;
+
 		// Match function definition pattern: returnType functionName(params)
 		// Pattern: type name(params) where type can be void, string, int, bool, float, double, byte, or custom types
 		// Also handles arrays like string[]
 		// Allows optional opening brace on same line: void myFunc() { ... }
-		const funcMatch = line.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*\{?\s*$/);
+		const funcMatch = line.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*\{?/);
 		if (funcMatch) {
 			const returnType = funcMatch[1] + (funcMatch[2] || "");
 			const functionName = funcMatch[3];
@@ -103,8 +128,10 @@ function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, U
 			});
 		}
 	}
-	
-	return functions;
+	// Store in cache for this document URI and version
+ 	userDefinedFunctionCache.set(cacheKey, { version: document.version, functions });
+ 	// Return a shallow copy to preserve the previous behavior
+ 	return new Map(functions);
 }
 
 export function activate(context: vscode.ExtensionContext) {
