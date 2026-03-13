@@ -2,6 +2,25 @@
 
 All notable changes to the TMscript Language Support extension will be documented in this file.
 
+## [0.6.1] - 2026-03-13
+
+### Added
+
+#### User-Defined Function Support
+- **Function Recognition** — Define your own functions with `returnType functionName(params)` syntax and they are now fully recognized
+- **Autocompletion** — User-defined functions appear in autocomplete suggestions with their signature and return type
+- **Signature Help** — Parameter hints are shown when calling your custom functions
+- **Hover Documentation** — Hover over function names to see their signature and definition line number
+- **No False Errors** — User-defined functions are no longer flagged as "does not exist"
+
+#### Function Parameter Scope
+- **Parameter Autocompletion** — Parameters are suggested in autocomplete when typing inside their function
+
+#### Syntax Highlighting
+- Added Syntax Highlighting for Script Project Keywords
+
+---
+
 ## [0.5.0] - 2026-03-09
 
 ### Initial Release

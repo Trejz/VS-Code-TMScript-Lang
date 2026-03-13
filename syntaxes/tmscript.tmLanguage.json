@@ -35,7 +35,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.tmscript",
-				"match": "\\b(if|while|for|return|switch|do while|break|continue|case|else|else if|default|void)\\b"
+				"match": "\\b(if|while|for|return|switch|do while|break|continue|case|else|else if|default|void|define|closestop|errorstop|true|false|main|newline)\\b"
 			}]
 		},
 		"strings": {
