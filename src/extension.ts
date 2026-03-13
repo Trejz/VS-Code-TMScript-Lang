@@ -69,12 +69,12 @@ const userDefinedFunctionCache: Map<string, { version: number; functions: Map<st
 
 // Helper function to parse user-defined functions from a document
 function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, UserDefinedFunction> {
-    const cacheKey = document.uri.toString();
- 	const cached = userDefinedFunctionCache.get(cacheKey);
- 	if (cached && cached.version === document.version) {
- 		// Return a shallow copy to avoid callers mutating the cached Map
- 		return new Map(cached.functions);
- 	}
+	const cacheKey = document.uri.toString();
+	const cached = userDefinedFunctionCache.get(cacheKey);
+	if (cached && cached.version === document.version) {
+		// Return a shallow copy to avoid callers mutating the cached Map
+		return new Map(cached.functions);
+	}
 	const functions: Map<string, UserDefinedFunction> = new Map();
 	
 	// Track multi-line comment state
@@ -82,7 +82,7 @@ function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, U
 	
 	for (let i = 0; i < document.lineCount; i++) {
 		let line = document.lineAt(i).text;
-        // Handle comments (block and line) with shared helper
+		// Handle comments (block and line) with shared helper
  		const commentResult = removeCommentsFromLine(line, inBlockComment);
  		inBlockComment = commentResult.inBlockComment;
  		if (commentResult.text === null) {
@@ -129,9 +129,9 @@ function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, U
 		}
 	}
 	// Store in cache for this document URI and version
- 	userDefinedFunctionCache.set(cacheKey, { version: document.version, functions });
- 	// Return a shallow copy to preserve the previous behavior
- 	return new Map(functions);
+	userDefinedFunctionCache.set(cacheKey, { version: document.version, functions });
+	// Return a shallow copy to preserve the previous behavior
+	return new Map(functions);
 }
 
 export function activate(context: vscode.ExtensionContext) {
