@@ -182,7 +182,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 
 				// Add keywords to completion
-				const keywords: string[] = ["if", "else", "while", "for", "do", "switch", "case", "break", "continue", "return", "default", "define", "closestop", "errorstop", "main", "newline"];
+				const keywords: string[] = ["if", "else", "while", "for", "do", "switch", "case", "break", "continue", "return", "default", "void", "define", "closestop", "errorstop", "true", "false", "main", "newline"];
 				for (const keyword of keywords) {
 					const item = new vscode.CompletionItem(
 						keyword,
@@ -501,7 +501,6 @@ export function activate(context: vscode.ExtensionContext) {
 				if (functionInfo) {
 					// Build signature information from functionsData
 					const signatures = (functionInfo.signatures as string[][]).map((sig, idx) => {
-						const params = sig.map(p => new vscode.ParameterInformation(p)).join(", ");
 						const signatureLabel = `${functionName}(${sig.join(", ")}) → ${getReturnType(functionInfo, idx)}`;
 						
 						const signature = new vscode.SignatureInformation(

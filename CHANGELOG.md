@@ -2,7 +2,7 @@
 
 All notable changes to the TMscript Language Support extension will be documented in this file.
 
-## [0.6.0] - 2026-03-13
+## [0.6.1] - 2026-03-13
 
 ### Added
 
