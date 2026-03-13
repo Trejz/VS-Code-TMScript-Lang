@@ -1331,6 +1331,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.workspace.onDidCloseTextDocument(doc => {
 			// Clear diagnostics when document is closed
 			diagnosticCollection.delete(doc.uri);
+			// Clear cached user-defined functions for closed document
+			userDefinedFunctionCache.delete(doc.uri.toString());
 		})
 	);
 
