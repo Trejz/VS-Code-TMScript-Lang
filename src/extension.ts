@@ -69,7 +69,8 @@ function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, U
 		// Match function definition pattern: returnType functionName(params)
 		// Pattern: type name(params) where type can be void, string, int, bool, float, double, byte, or custom types
 		// Also handles arrays like string[]
-		const funcMatch = line.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*$/);
+		// Allows optional opening brace on same line: void myFunc() { ... }
+		const funcMatch = line.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*\{?\s*$/);
 		if (funcMatch) {
 			const returnType = funcMatch[1] + (funcMatch[2] || "");
 			const functionName = funcMatch[3];
@@ -258,7 +259,7 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 					
 					// Check for function definition
-					const funcDefMatch = line.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*$/);
+					const funcDefMatch = line.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*\{?\s*$/);
 					if (funcDefMatch && currentFunctionParams === null) {
 						const paramsString = funcDefMatch[4].trim();
 						currentFunctionParams = [];
@@ -1055,7 +1056,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const lineWithoutComments = removeComments(line);
 			
 			// Check if this line is a function definition
-			const funcDefMatch = lineWithoutComments.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*$/);
+			const funcDefMatch = lineWithoutComments.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*\{?\s*$/);
 			if (funcDefMatch && currentFunctionParams === null) {
 				const paramsString = funcDefMatch[4].trim();
 				currentFunctionParams = new Set<string>();
