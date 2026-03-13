@@ -22,6 +22,90 @@ function getReturnTypeSummary(functionInfo: any): string {
 	return ret ?? "void";
 }
 
+// Interface for user-defined function info
+interface UserDefinedFunction {
+	returnType: string;
+	parameters: string[];
+	lineNumber: number;
+}
+
+// Helper function to parse user-defined functions from a document
+function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, UserDefinedFunction> {
+	const functions: Map<string, UserDefinedFunction> = new Map();
+	
+	// Track multi-line comment state
+	let inBlockComment = false;
+	
+	for (let i = 0; i < document.lineCount; i++) {
+		let line = document.lineAt(i).text;
+		
+		// Handle block comments
+		if (inBlockComment) {
+			const endIndex = line.indexOf("*/");
+			if (endIndex !== -1) {
+				inBlockComment = false;
+				line = " ".repeat(endIndex + 2) + line.substring(endIndex + 2);
+			} else {
+				continue; // Skip lines inside block comments
+			}
+		}
+		
+		// Remove inline block comments
+		line = line.replace(/\/\*.*?\*\//g, match => " ".repeat(match.length));
+		
+		// Check for block comment start
+		const blockStartIndex = line.indexOf("/*");
+		if (blockStartIndex !== -1) {
+			inBlockComment = true;
+			line = line.substring(0, blockStartIndex);
+		}
+		
+		// Remove single-line comments
+		const lineCommentIndex = line.indexOf("//");
+		if (lineCommentIndex !== -1) {
+			line = line.substring(0, lineCommentIndex);
+		}
+		
+		// Match function definition pattern: returnType functionName(params)
+		// Pattern: type name(params) where type can be void, string, int, bool, float, double, byte, or custom types
+		// Also handles arrays like string[]
+		const funcMatch = line.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*$/);
+		if (funcMatch) {
+			const returnType = funcMatch[1] + (funcMatch[2] || "");
+			const functionName = funcMatch[3];
+			const paramsString = funcMatch[4].trim();
+			
+			// Parse parameters
+			const parameters: string[] = [];
+			if (paramsString) {
+				// Split by comma and parse each parameter
+				const paramParts = paramsString.split(",");
+				for (const param of paramParts) {
+					const trimmed = param.trim();
+					if (trimmed) {
+						// Match parameter: type name (with optional [])
+						const paramMatch = trimmed.match(/^((?:string|int|byte|float|double|bool|[A-Z]\w*)(?:\[\])?)\s+(\w+)$/);
+						if (paramMatch) {
+							parameters.push(`${paramMatch[1]} ${paramMatch[2]}`);
+						} else {
+							// Keep as-is if parsing fails
+							parameters.push(trimmed);
+						}
+					}
+				}
+			}
+			
+			functions.set(functionName, {
+				returnType,
+				parameters,
+				lineNumber: i
+			});
+		}
+	}
+	
+	return functions;
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	// Load functions data
 	const functionsPath = path.join(context.extensionPath, "data", "functions.json");
@@ -98,7 +182,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 
 				// Add keywords to completion
-				const keywords: string[] = ["if", "else", "while", "for", "do", "switch", "case", "break", "continue", "return", "default"];
+				const keywords: string[] = ["if", "else", "while", "for", "do", "switch", "case", "break", "continue", "return", "default", "define", "closestop", "errorstop", "main", "newline"];
 				for (const keyword of keywords) {
 					const item = new vscode.CompletionItem(
 						keyword,
@@ -119,6 +203,104 @@ export function activate(context: vscode.ExtensionContext) {
 					item.detail = "Data Type";
 					item.insertText = dataType;
 					completionItems.push(item);
+				}
+
+				// Add user-defined functions to completion
+				const userDefinedFunctions = parseUserDefinedFunctions(document);
+				for (const [funcName, funcInfo] of userDefinedFunctions) {
+					const item = new vscode.CompletionItem(
+						funcName,
+						vscode.CompletionItemKind.Function
+					);
+					
+					const signature = `${funcName}(${funcInfo.parameters.join(", ")}) → ${funcInfo.returnType}`;
+					const documentation = new vscode.MarkdownString(
+						`**User-defined function**\n\n**Signature:**\n\`\`\`\n${signature}\n\`\`\``
+					);
+					
+					item.documentation = documentation;
+					item.detail = `Returns: ${funcInfo.returnType}`;
+					item.insertText = new vscode.SnippetString(`${funcName}($0)`);
+					item.command = { command: "editor.action.triggerParameterHints", title: "Trigger Parameter Hints" };
+					
+					completionItems.push(item);
+				}
+
+				// Add function parameters if cursor is inside a function body
+				// Find which function we're in by tracking braces
+				let currentFunctionParams: Array<{name: string, type: string}> | null = null;
+				let braceDepth = 0;
+				let functionStartBraceDepth = 0;
+				let inBlockComment = false;
+				
+				for (let i = 0; i <= position.line; i++) {
+					let line = document.lineAt(i).text;
+					
+					// Handle block comments
+					if (inBlockComment) {
+						const endIndex = line.indexOf("*/");
+						if (endIndex !== -1) {
+							inBlockComment = false;
+							line = " ".repeat(endIndex + 2) + line.substring(endIndex + 2);
+						} else {
+							continue;
+						}
+					}
+					line = line.replace(/\/\*.*?\*\//g, match => " ".repeat(match.length));
+					const blockStartIndex = line.indexOf("/*");
+					if (blockStartIndex !== -1) {
+						inBlockComment = true;
+						line = line.substring(0, blockStartIndex);
+					}
+					const lineCommentIndex = line.indexOf("//");
+					if (lineCommentIndex !== -1) {
+						line = line.substring(0, lineCommentIndex);
+					}
+					
+					// Check for function definition
+					const funcDefMatch = line.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*$/);
+					if (funcDefMatch && currentFunctionParams === null) {
+						const paramsString = funcDefMatch[4].trim();
+						currentFunctionParams = [];
+						
+						if (paramsString) {
+							const paramParts = paramsString.split(",");
+							for (const param of paramParts) {
+								const trimmed = param.trim();
+								const paramMatch = trimmed.match(/^((?:string|int|byte|float|double|bool|[A-Z]\w*)(?:\[\])?)\s+(\w+)$/);
+								if (paramMatch) {
+									currentFunctionParams.push({ type: paramMatch[1], name: paramMatch[2] });
+								}
+							}
+						}
+						functionStartBraceDepth = braceDepth;
+					}
+					
+					// Track braces
+					const lineWithoutStrings = line.replace(/"[^"]*"/g, match => " ".repeat(match.length));
+					for (const char of lineWithoutStrings) {
+						if (char === "{") {
+							braceDepth++;
+						} else if (char === "}") {
+							braceDepth--;
+							if (currentFunctionParams !== null && braceDepth === functionStartBraceDepth) {
+								currentFunctionParams = null;
+							}
+						}
+					}
+				}
+				
+				// Add parameters as completion items if we're inside a function
+				if (currentFunctionParams !== null) {
+					for (const param of currentFunctionParams) {
+						const item = new vscode.CompletionItem(
+							param.name,
+							vscode.CompletionItemKind.Variable
+						);
+						item.detail = `Parameter: ${param.type}`;
+						item.insertText = param.name;
+						completionItems.push(item);
+					}
 				}
 
 				return completionItems;
@@ -316,30 +498,51 @@ export function activate(context: vscode.ExtensionContext) {
 				const functionName = functionMatch[1];
 				const functionInfo = functionsData[functionName];
 
-				if (!functionInfo) {
-					return null;
+				if (functionInfo) {
+					// Build signature information from functionsData
+					const signatures = (functionInfo.signatures as string[][]).map((sig, idx) => {
+						const params = sig.map(p => new vscode.ParameterInformation(p)).join(", ");
+						const signatureLabel = `${functionName}(${sig.join(", ")}) → ${getReturnType(functionInfo, idx)}`;
+						
+						const signature = new vscode.SignatureInformation(
+							signatureLabel,
+							functionInfo.documentation
+						);
+						signature.parameters = sig.map(p => new vscode.ParameterInformation(p));
+
+						return signature;
+					});
+
+					const help = new vscode.SignatureHelp();
+					help.signatures = signatures;
+					help.activeSignature = 0;
+					help.activeParameter = 0;
+
+					return help;
 				}
 
-				// Build signature information
-				const signatures = (functionInfo.signatures as string[][]).map((sig, idx) => {
-					const params = sig.map(p => new vscode.ParameterInformation(p)).join(", ");
-					const signatureLabel = `${functionName}(${sig.join(", ")}) → ${getReturnType(functionInfo, idx)}`;
+				// Check if it's a user-defined function
+				const userDefinedFunctions = parseUserDefinedFunctions(document);
+				const userFuncInfo = userDefinedFunctions.get(functionName);
+				
+				if (userFuncInfo) {
+					const signatureLabel = `${functionName}(${userFuncInfo.parameters.join(", ")}) → ${userFuncInfo.returnType}`;
 					
 					const signature = new vscode.SignatureInformation(
 						signatureLabel,
-						functionInfo.documentation
+						"User-defined function"
 					);
-					signature.parameters = sig.map(p => new vscode.ParameterInformation(p));
+					signature.parameters = userFuncInfo.parameters.map(p => new vscode.ParameterInformation(p));
 
-					return signature;
-				});
+					const help = new vscode.SignatureHelp();
+					help.signatures = [signature];
+					help.activeSignature = 0;
+					help.activeParameter = 0;
 
-				const help = new vscode.SignatureHelp();
-				help.signatures = signatures;
-				help.activeSignature = 0;
-				help.activeParameter = 0;
+					return help;
+				}
 
-				return help;
+				return null;
 			}
 		},
 		"(",
@@ -566,6 +769,17 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 					
 					const markdown = new vscode.MarkdownString(markdownContent);
+					return new vscode.Hover(markdown);
+				}
+
+				// Check if word is a user-defined function
+				const userDefinedFunctions = parseUserDefinedFunctions(document);
+				const userFuncInfo = userDefinedFunctions.get(word);
+				if (userFuncInfo) {
+					const signature = `${word}(${userFuncInfo.parameters.join(", ")}) → ${userFuncInfo.returnType}`;
+					const markdown = new vscode.MarkdownString(
+						`**User-defined function**\n\n**Signature:**\n\`\`\`\n${signature}\n\`\`\`\n\n*Defined on line ${userFuncInfo.lineNumber + 1}*`
+					);
 					return new vscode.Hover(markdown);
 				}
 
@@ -822,7 +1036,64 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		// Keywords to skip
-		const keywords = new Set(["if", "while", "for", "return", "switch", "do", "break", "continue", "case", "else", "default", "void"]);
+		const keywords = new Set(["if", "while", "for", "return", "switch", "do", "break", "continue", "case", "else", "default", "void", "define", "closestop", "errorstop", "true", "false", "main", "newline"]);
+
+		// Parse user-defined functions
+		const userDefinedFunctions = parseUserDefinedFunctions(document);
+
+		// Build function scopes: map each line to the parameters that are valid on that line
+		// This requires tracking braces to determine where each function body starts and ends
+		const lineFunctionParams: Map<number, Set<string>> = new Map();
+		
+		// First pass: find function definitions and track their scopes
+		let currentFunctionParams: Set<string> | null = null;
+		let braceDepth = 0;
+		let functionStartBraceDepth = 0;
+		inBlockComment = false;
+		
+		for (let i = 0; i < document.lineCount; i++) {
+			const line = document.lineAt(i).text;
+			const lineWithoutComments = removeComments(line);
+			
+			// Check if this line is a function definition
+			const funcDefMatch = lineWithoutComments.match(/^\s*(void|string|int|byte|float|double|bool|[A-Z]\w*)(\[\])?\s+(\w+)\s*\(([^)]*)\)\s*$/);
+			if (funcDefMatch && currentFunctionParams === null) {
+				const paramsString = funcDefMatch[4].trim();
+				currentFunctionParams = new Set<string>();
+				
+				if (paramsString) {
+					const paramParts = paramsString.split(",");
+					for (const param of paramParts) {
+						const trimmed = param.trim();
+						// Extract just the parameter name
+						const paramMatch = trimmed.match(/^(?:string|int|byte|float|double|bool|[A-Z]\w*)(?:\[\])?\s+(\w+)$/);
+						if (paramMatch) {
+							currentFunctionParams.add(paramMatch[1]);
+						}
+					}
+				}
+				functionStartBraceDepth = braceDepth;
+			}
+			
+			// Track braces (remove strings first to avoid counting braces inside strings)
+			const lineWithoutStrings = lineWithoutComments.replace(/"[^"]*"/g, match => " ".repeat(match.length));
+			for (const char of lineWithoutStrings) {
+				if (char === "{") {
+					braceDepth++;
+				} else if (char === "}") {
+					braceDepth--;
+					// Check if we're closing the current function's scope
+					if (currentFunctionParams !== null && braceDepth === functionStartBraceDepth) {
+						currentFunctionParams = null;
+					}
+				}
+			}
+			
+			// If we're inside a function, record its parameters for this line
+			if (currentFunctionParams !== null) {
+				lineFunctionParams.set(i, currentFunctionParams);
+			}
+		}
 
 		// Reset block comment state for second pass
 		inBlockComment = false;
@@ -876,8 +1147,11 @@ export function activate(context: vscode.ExtensionContext) {
 					continue;
 				}
 				
-				// Check if function exists in functionsData
-				if (!functionsData[functionName] || functionName === "types") {
+				// Check if function exists in functionsData or user-defined functions
+				const isBuiltInFunction = functionsData[functionName] && functionName !== "types" && functionName !== "parameterizedObjects";
+				const isUserDefinedFunction = userDefinedFunctions.has(functionName);
+				
+				if (!isBuiltInFunction && !isUserDefinedFunction) {
 					const startChar = match.index!;
 					const endChar = startChar + functionName.length;
 					const range = new vscode.Range(
@@ -931,6 +1205,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 				// Skip if it"s an external variable (var_ or g_ prefix)
 				if (varName.startsWith("var_") || varName.startsWith("g_")) {
+					continue;
+				}
+
+				// Check if variable is a function parameter in the current scope
+				const scopeParams = lineFunctionParams.get(i);
+				if (scopeParams && scopeParams.has(varName)) {
 					continue;
 				}
 
