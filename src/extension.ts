@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
@@ -64,6 +65,13 @@ interface UserDefinedFunction {
 	parameters: string[];
 	lineNumber: number;
 }
+
+interface GlobalVariableInfo {
+	type: string;
+	lineNumber: number;
+	uri: string;
+}
+
 // Cache for user-defined functions per document URI and version
 const userDefinedFunctionCache: Map<string, { version: number; functions: Map<string, UserDefinedFunction> }> = new Map();
 
@@ -134,10 +142,160 @@ function parseUserDefinedFunctions(document: vscode.TextDocument): Map<string, U
 	return new Map(functions);
 }
 
+// Cache for define-scope globals per document URI and version
+const defineGlobalVariableCache: Map<string, { version: number; globals: Map<string, GlobalVariableInfo> }> = new Map();
+
+// Strip string literals to keep brace counting stable
+function stripStringLiterals(line: string): string {
+	return line.replace(/"[^"]*"/g, match => " ".repeat(match.length));
+}
+
+// Parse globals declared within define { ... } blocks from a list of lines.
+function parseDefineGlobalVariablesFromLines(lines: string[], sourceUri: string): Map<string, GlobalVariableInfo> {
+	const globals: Map<string, GlobalVariableInfo> = new Map();
+	let inBlockComment = false;
+	let inDefineBlock = false;
+	let waitingForDefineBrace = false;
+	let defineBraceDepth = 0;
+
+	const declarationRegex = /^\s*((?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?)\s+([^;]+?)\s*;?\s*$/;
+
+	for (let i = 0; i < lines.length; i++) {
+		let line = lines[i];
+		const commentResult = removeCommentsFromLine(line, inBlockComment);
+		inBlockComment = commentResult.inBlockComment;
+		if (commentResult.text === null) {
+			continue;
+		}
+
+		line = commentResult.text;
+		const lineForBraces = stripStringLiterals(line);
+
+		if (!inDefineBlock) {
+			if (waitingForDefineBrace) {
+				const openBraceIndex = lineForBraces.indexOf("{");
+				if (openBraceIndex !== -1) {
+					inDefineBlock = true;
+					waitingForDefineBrace = false;
+					defineBraceDepth = 0;
+				} else {
+					continue;
+				}
+			}
+
+			if (!inDefineBlock) {
+				const defineMatch = lineForBraces.match(/\bdefine\b/);
+				if (defineMatch) {
+					const afterDefine = lineForBraces.substring((defineMatch.index ?? 0) + defineMatch[0].length);
+					const openBraceIndex = afterDefine.indexOf("{");
+					if (openBraceIndex !== -1) {
+						inDefineBlock = true;
+						defineBraceDepth = 0;
+					} else {
+						waitingForDefineBrace = true;
+					}
+				}
+				continue;
+			}
+		}
+
+		if (inDefineBlock) {
+			const declarationMatch = line.match(declarationRegex);
+			if (declarationMatch) {
+				const varType = declarationMatch[1];
+				const variableList = declarationMatch[2]
+					.split(",")
+					.map(part => part.trim())
+					.filter(Boolean);
+
+				for (const variablePart of variableList) {
+					const variableNameMatch = variablePart.match(/^([A-Za-z_]\w*)\b/);
+					if (!variableNameMatch) {
+						continue;
+					}
+					const variableName = variableNameMatch[1];
+					globals.set(variableName, {
+						type: varType,
+						lineNumber: i,
+						uri: sourceUri
+					});
+				}
+			}
+
+			for (const ch of lineForBraces) {
+				if (ch === "{") {
+					defineBraceDepth++;
+				} else if (ch === "}") {
+					defineBraceDepth--;
+				}
+			}
+
+			if (defineBraceDepth <= 0) {
+				inDefineBlock = false;
+				defineBraceDepth = 0;
+			}
+		}
+	}
+
+	return globals;
+}
+
+function parseDefineGlobalVariablesFromDocument(document: vscode.TextDocument): Map<string, GlobalVariableInfo> {
+	const cacheKey = document.uri.toString();
+	const cached = defineGlobalVariableCache.get(cacheKey);
+	if (cached && cached.version === document.version) {
+		return new Map(cached.globals);
+	}
+
+	const lines: string[] = [];
+	for (let i = 0; i < document.lineCount; i++) {
+		lines.push(document.lineAt(i).text);
+	}
+
+	const globals = parseDefineGlobalVariablesFromLines(lines, cacheKey);
+	defineGlobalVariableCache.set(cacheKey, { version: document.version, globals });
+	return new Map(globals);
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	// Load functions data
 	const functionsPath = path.join(context.extensionPath, "data", "functions.json");
 	const functionsData = JSON.parse(fs.readFileSync(functionsPath, "utf8"));
+	const workspaceGlobalVariables: Map<string, GlobalVariableInfo> = new Map();
+
+	const refreshWorkspaceGlobalVariables = async () => {
+		const latestGlobals: Map<string, GlobalVariableInfo> = new Map();
+		const tmsFiles = await vscode.workspace.findFiles("**/*.tms", "**/{node_modules,.git,out,dist}/**");
+
+		for (const fileUri of tmsFiles) {
+			let lines: string[] = [];
+			const openDocument = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === fileUri.toString());
+			if (openDocument) {
+				for (let i = 0; i < openDocument.lineCount; i++) {
+					lines.push(openDocument.lineAt(i).text);
+				}
+			} else {
+				try {
+					const raw = await vscode.workspace.fs.readFile(fileUri);
+					lines = Buffer.from(raw).toString("utf8").split(/\r?\n/);
+				} catch {
+					continue;
+				}
+			}
+
+			const parsed = parseDefineGlobalVariablesFromLines(lines, fileUri.toString());
+			for (const [name, info] of parsed) {
+				if (!latestGlobals.has(name)) {
+					latestGlobals.set(name, info);
+				}
+			}
+		}
+
+		workspaceGlobalVariables.clear();
+		for (const [name, info] of latestGlobals) {
+			workspaceGlobalVariables.set(name, info);
+		}
+	};
 
 	// Register completion provider
 	const completionProvider = vscode.languages.registerCompletionItemProvider(
@@ -145,6 +303,7 @@ export function activate(context: vscode.ExtensionContext) {
 		{
 			provideCompletionItems(document, position, token) {
 				const completionItems: vscode.CompletionItem[] = [];
+				const addedVariableNames: Set<string> = new Set();
 
 				// Create completion items for each function (skip "types" and "parameterizedObjects")
 				for (const [functionName, functionInfo] of Object.entries(functionsData)) {
@@ -193,11 +352,14 @@ export function activate(context: vscode.ExtensionContext) {
 				for (let i = 0; i < document.lineCount; i++) {
 					const line = document.lineAt(i).text;
 					
-					// Match variable declarations: type variableName = ... (including arrays like string[])
-					const varDeclMatch = line.match(/\b((?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?)\s+(\w+)\s*=/);
+					// Match variable declarations: type variableName [= ...] (including arrays like string[])
+					const varDeclMatch = line.match(/\b((?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?)\s+(\w+)\s*(?:=|;|$)/);
 					if (varDeclMatch) {
 						const varType = varDeclMatch[1];
 						const varName = varDeclMatch[2];
+						if (addedVariableNames.has(varName)) {
+							continue;
+						}
 						
 						const item = new vscode.CompletionItem(
 							varName,
@@ -206,7 +368,38 @@ export function activate(context: vscode.ExtensionContext) {
 						item.detail = `Variable: ${varType}`;
 						item.insertText = varName;
 						completionItems.push(item);
+						addedVariableNames.add(varName);
 					}
+				}
+
+				// Add globals declared in define blocks across the workspace
+				const currentDocumentGlobals = parseDefineGlobalVariablesFromDocument(document);
+				for (const [globalName, globalInfo] of workspaceGlobalVariables) {
+					if (addedVariableNames.has(globalName)) {
+						continue;
+					}
+					const item = new vscode.CompletionItem(
+						globalName,
+						vscode.CompletionItemKind.Variable
+					);
+					item.detail = `Global (${globalInfo.type})`;
+					item.insertText = globalName;
+					completionItems.push(item);
+					addedVariableNames.add(globalName);
+				}
+
+				for (const [globalName, globalInfo] of currentDocumentGlobals) {
+					if (addedVariableNames.has(globalName)) {
+						continue;
+					}
+					const item = new vscode.CompletionItem(
+						globalName,
+						vscode.CompletionItemKind.Variable
+					);
+					item.detail = `Global (${globalInfo.type})`;
+					item.insertText = globalName;
+					completionItems.push(item);
+					addedVariableNames.add(globalName);
 				}
 
 				// Add keywords to completion
@@ -974,6 +1167,15 @@ export function activate(context: vscode.ExtensionContext) {
 		// Collect all defined variables and their types
 		const definedVariables: Set<string> = new Set();
 		const variableTypes: Map<string, string> = new Map();
+		for (const [globalName, globalInfo] of workspaceGlobalVariables) {
+			definedVariables.add(globalName);
+			variableTypes.set(globalName, globalInfo.type);
+		}
+		const currentDocumentGlobals = parseDefineGlobalVariablesFromDocument(document);
+		for (const [globalName, globalInfo] of currentDocumentGlobals) {
+			definedVariables.add(globalName);
+			variableTypes.set(globalName, globalInfo.type);
+		}
 		
 		for (let i = 0; i < document.lineCount; i++) {
 			const line = document.lineAt(i).text;
@@ -1055,7 +1257,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 			} else {
 				// Also capture declarations without assignment for variable tracking
-				const varDeclNoAssignMatch = lineWithoutComments.match(/\b(?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?\s+(\w+)\s*;/);
+				const varDeclNoAssignMatch = lineWithoutComments.match(/\b(?:string|int|byte|float|double|bool|[A-Z]\w+)(?:\[\])?\s+(\w+)\s*;?\s*$/);
 				if (varDeclNoAssignMatch) {
 					definedVariables.add(varDeclNoAssignMatch[1]);
 				}
@@ -1316,16 +1518,34 @@ export function activate(context: vscode.ExtensionContext) {
 		diagnosticCollection.set(document.uri, diagnostics);
 	};
 
+	const updateDiagnosticsForOpenTmsDocuments = () => {
+		vscode.workspace.textDocuments.forEach(doc => {
+			if (doc.languageId === "tmscript") {
+				updateDiagnostics(doc);
+			}
+		});
+	};
+
 	// Update diagnostics when document is opened or changed (only for tmscript files)
 	context.subscriptions.push(
 		vscode.workspace.onDidOpenTextDocument(doc => {
 			if (doc.languageId === "tmscript") {
-				updateDiagnostics(doc);
+				void refreshWorkspaceGlobalVariables().then(() => {
+					updateDiagnosticsForOpenTmsDocuments();
+				});
 			}
 		}),
 		vscode.workspace.onDidChangeTextDocument(event => {
 			if (event.document.languageId === "tmscript") {
+				// Current document globals should react immediately while typing.
 				updateDiagnostics(event.document);
+			}
+		}),
+		vscode.workspace.onDidSaveTextDocument(doc => {
+			if (doc.languageId === "tmscript") {
+				void refreshWorkspaceGlobalVariables().then(() => {
+					updateDiagnosticsForOpenTmsDocuments();
+				});
 			}
 		}),
 		vscode.workspace.onDidCloseTextDocument(doc => {
@@ -1333,14 +1553,18 @@ export function activate(context: vscode.ExtensionContext) {
 			diagnosticCollection.delete(doc.uri);
 			// Clear cached user-defined functions for closed document
 			userDefinedFunctionCache.delete(doc.uri.toString());
+			// Clear cached define globals for closed document
+			defineGlobalVariableCache.delete(doc.uri.toString());
+			if (doc.languageId === "tmscript") {
+				void refreshWorkspaceGlobalVariables().then(() => {
+					updateDiagnosticsForOpenTmsDocuments();
+				});
+			}
 		})
 	);
 
-	// Update diagnostics for currently open tmscript documents
-	vscode.workspace.textDocuments.forEach(doc => {
-		if (doc.languageId === "tmscript") {
-			updateDiagnostics(doc);
-		}
+	void refreshWorkspaceGlobalVariables().then(() => {
+		updateDiagnosticsForOpenTmsDocuments();
 	});
 }
 
