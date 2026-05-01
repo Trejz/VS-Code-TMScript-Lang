@@ -2,6 +2,18 @@
 
 All notable changes to the TMscript Language Support extension will be documented in this file.
 
+## [0.6.2] - 2026-05-01
+
+### Added
+
+#### Global Variable Support (Script Projects)
+- **Define Block Parsing** — Variables declared inside `define { ... }` blocks (without an initializer, e.g. `int TestVar`) are now recognized as project-wide globals
+- **Autocompletion** — Define-block globals appear in autocomplete suggestions with a `Global (type)` label
+- **Cross-File Globals** — All `.tms` files in the workspace are scanned so globals defined in one file are recognized in all other files
+- **Live Refresh** — The workspace global index is refreshed automatically when any `.tms` file is opened, saved, or closed
+
+---
+
 ## [0.6.1] - 2026-03-13
 
 ### Added
